@@ -7,4 +7,7 @@ export class AdminAuthAPI extends AbstractRestApiClient {
     public async login(data: loginRequest): Promise<LoginResponse> {
         return this.post('admin/api/auth/login', undefined, data)
     }
+    public async register(data: loginRequest): Promise<LoginResponse> {
+        return this.post('admin/api', undefined, data)
+    }
 }

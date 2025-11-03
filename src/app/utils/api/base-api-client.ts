@@ -7,7 +7,6 @@ export default class AbstractRestApiClient {
     protected protectedResource: boolean = false
 
     constructor(baseURL?: string) {
-        // bạn có thể đổi URL này sang env riêng
         this.baseURL = baseURL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5279'
         this.defaultHeaders = {
             'Content-Type': 'application/json',
@@ -59,7 +58,11 @@ export default class AbstractRestApiClient {
                 : await response.text()
 
             if (!response.ok) {
-                throw new Error(data?.message || `Request failed: ${response.status}`)
+                if (contentType?.includes('application/json')) {
+                    throw data
+                } else {
+                    throw new Error(await response.text())
+                }
             }
 
             return data

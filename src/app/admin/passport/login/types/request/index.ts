@@ -1,4 +1,4 @@
 export interface loginRequest  {
-    email: string
+    gmail: string
     password: string
 }
