@@ -8,7 +8,7 @@ import { setCredentials } from '@/store/authSlice'
 import { AdminAuthAPI } from '@/app/admin/passport/api'
 import { LoginSchemaType, LoginValidationSchema } from "@/app/admin/passport/login/types/validators"
 import Link from 'next/link'
-import { toastError, toastSuccess } from '@/components/ui/Toast'
+import ctoast from "@/components/ui/Toast";
 
 export default function Home() {
     const router = useRouter()
@@ -30,10 +30,10 @@ export default function Home() {
             const response = await api.login(data)
             dispatch(setCredentials({ token: response.token }))
             localStorage.setItem('access_token', response.token)
-            toastSuccess('Đăng nhập thành công')
+            ctoast.success('Đăng nhập thành công')
             router.push('/admin/dashboard')
         } catch (error: any) {
-            toastError('Thông Tin Đăng Nhập Không Chính Xác')
+            ctoast.error('Thông Tin Đăng Nhập Không Chính Xác')
         }
     }
 

@@ -6,7 +6,6 @@ import { RegisterSchemaType, RegisterValidationSchema } from '@/app/admin/passpo
 import { useRouter } from 'next/navigation'
 import { AdminAuthAPI } from '@/app/admin/passport/api'
 import Link from 'next/link'
-import { toastError, toastSuccess } from '@/components/ui/Toast'
 import { handleFormErrors } from '@/app/utils/helper/FormErrors'
 import { FormErrorMessage } from '@/app/components/form/FormErrorMessage'
 
@@ -28,6 +27,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 import { Mail, Lock, Loader2 } from 'lucide-react'
+import ctoast from "@/components/ui/Toast";
 
 export default function RegisterPage() {
     const router = useRouter()
@@ -46,11 +46,11 @@ export default function RegisterPage() {
         try {
             const api = new AdminAuthAPI()
             await api.register({ gmail: data.gmail, password: data.password })
-            toastSuccess('Đăng ký thành công')
+            ctoast.success('Đăng ký thành công')
             router.push('/admin/passport/login')
         } catch (error: any) {
             const handled = handleFormErrors<RegisterSchemaType>(setError, error)
-            if (!handled) toastError('Đăng ký thất bại. Vui lòng thử lại.')
+            if (!handled) ctoast.error('Đăng ký thất bại. Vui lòng thử lại.')
         }
     }
 

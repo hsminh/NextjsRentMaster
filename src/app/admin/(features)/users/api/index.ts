@@ -21,6 +21,6 @@ export class AdminUsersAPI extends AbstractRestApiClient {
   }
 
   delete(uid: string): Promise<void> {
-    return this.delete<void>(`${this.base}/${uid}`)
+    return super.delete(`${this.base}/${uid}`)
   }
 }
