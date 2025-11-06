@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '@/store'
 import { setCredentials } from '@/store/authSlice'
 import { AuthSchemaType, createAuthValidation } from '@/shared/types/validator/validators'
-import { AdminAuthAPI } from '@/app/admin/passport/api'
+import { LandLordAPI } from '@/app/landlord/passport/api'
 import ctoast from '@/components/ui/Toast'
 import Link from 'next/link'
 
@@ -29,7 +29,7 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 
-export default function AdminLogin() {
+export default function LandlordLogin() {
     const router = useRouter()
     const dispatch = useAppDispatch()
 
@@ -44,15 +44,15 @@ export default function AdminLogin() {
 
     const onSubmit = async (data: AuthSchemaType) => {
         try {
-            const api = new AdminAuthAPI()
+            const api = new LandLordAPI()
             const response = await api.login({
                 gmail: data.gmail,
                 password: data.password,
             })
-            dispatch(setCredentials({ token: response.token, userType: 'admin' }))
+            dispatch(setCredentials({ token: response.token, userType: 'landlord' }))
             localStorage.setItem('access_token', response.token)
             ctoast.success('Đăng nhập thành công')
-            router.push('/admin/dashboard')
+            router.push('/landlord/dashboard')
         } catch {
             ctoast.error('Thông Tin Đăng Nhập Không Chính Xác')
         }
@@ -63,10 +63,10 @@ export default function AdminLogin() {
             <Card className="w-full max-w-md shadow-xl rounded-2xl">
                 <CardHeader className="text-center space-y-1">
                     <CardTitle className="text-3xl font-bold text-gray-900">
-                        Đăng nhập Quản trị viên
+                        Đăng nhập Chủ nhà
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                        Đăng nhập để quản lý hệ thống
+                        Đăng nhập để quản lý tài sản của bạn
                     </CardDescription>
                 </CardHeader>
 
@@ -82,7 +82,7 @@ export default function AdminLogin() {
                                         <FormControl>
                                             <Input
                                                 type="email"
-                                                placeholder="admin@example.com"
+                                                placeholder="you@example.com"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -126,10 +126,10 @@ export default function AdminLogin() {
                     <p className="text-sm text-gray-600">
                         Chưa có tài khoản?{' '}
                         <Link
-                            href="/admin/passport/register"
+                            href="/landlord/passport/register"
                             className="font-medium text-blue-600 hover:text-blue-500"
                         >
-                            Tạo tài khoản mới
+                            Đăng ký ngay
                         </Link>
                     </p>
                 </CardFooter>

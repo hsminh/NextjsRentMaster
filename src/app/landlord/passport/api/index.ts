@@ -1,13 +1,13 @@
-import AbstractRestApiClient from "@/app/utils/api/base-api-client";
 import {LoginRequest} from "@/shared/types/request";
 import {AuthResponse} from "@/shared/types/response";
+import AbstractRestApiClient from "@/app/utils/api/base-api-client";
 
-export class AdminAuthAPI extends AbstractRestApiClient {
+export class LandLordAPI extends AbstractRestApiClient {
     protected protectedResource = false
     public async login(data: LoginRequest): Promise<AuthResponse> {
-        return this.post('admin/api/auth/login', undefined, data)
+        return this.post('landlord/api/auth/login', undefined, data)
     }
     public async register(data: LoginRequest): Promise<void> {
-        return this.post('admin/api', undefined, data)
+        return this.post('landlord/api', undefined, data)
     }
 }

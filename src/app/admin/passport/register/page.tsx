@@ -2,11 +2,9 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { RegisterSchemaType, RegisterValidationSchema } from '@/app/admin/passport/register/types/validators'
 import { useRouter } from 'next/navigation'
 import { AdminAuthAPI } from '@/app/admin/passport/api'
 import Link from 'next/link'
-import { handleFormErrors } from '@/app/utils/helper/FormErrors'
 import { FormErrorMessage } from '@/app/components/form/FormErrorMessage'
 
 import {
@@ -28,12 +26,18 @@ import { Button } from '@/components/ui/button'
 
 import { Mail, Lock, Loader2 } from 'lucide-react'
 import ctoast from "@/components/ui/Toast";
+import { AuthSchemaType, createAuthValidation } from "@/shared/types/validator/validators";
+import { handleFormErrors } from "@/app/utils/helper/FormErrors";
 
 export default function RegisterPage() {
     const router = useRouter()
-    const form = useForm<RegisterSchemaType>({
-        resolver: zodResolver(RegisterValidationSchema()),
+    const form = useForm<AuthSchemaType>({
+        resolver: zodResolver(createAuthValidation()),
         mode: 'onTouched',
+        defaultValues: {
+            gmail: '',
+            password: ''
+        }
     })
 
     const {
@@ -42,15 +46,19 @@ export default function RegisterPage() {
         setError,
     } = form
 
-    const onSubmit = async (data: RegisterSchemaType) => {
+    const onSubmit = async (data: AuthSchemaType) => {
         try {
             const api = new AdminAuthAPI()
-            await api.register({ gmail: data.gmail, password: data.password })
+            await api.register({
+                ...data
+            })
             ctoast.success('Đăng ký thành công')
             router.push('/admin/passport/login')
         } catch (error: any) {
-            const handled = handleFormErrors<RegisterSchemaType>(setError, error)
-            if (!handled) ctoast.error('Đăng ký thất bại. Vui lòng thử lại.')
+            const handled = handleFormErrors<AuthSchemaType>(setError, error)
+            if (!handled) {
+                ctoast.error('Đăng ký thất bại. Vui lòng thử lại.')
+            }
         }
     }
 
@@ -73,12 +81,12 @@ export default function RegisterPage() {
                                 name="gmail"
                                 render={({ field, fieldState }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel>Gmail</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                                                 <Input
-                                                    placeholder="you@example.com"
+                                                    placeholder="you@gmail.com"
                                                     type="email"
                                                     className="pl-10"
                                                     {...field}

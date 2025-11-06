@@ -4,28 +4,32 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-    LayoutDashboard,
-    Gift,
-    Users,
-    Settings,
-    ChevronLeft,
-    Menu,
-} from 'lucide-react'
+import { ChevronLeft, Menu, LogOut } from 'lucide-react'
+
+export type MenuItem = {
+    icon: React.ElementType
+    label: string
+    path: string
+}
 
 interface SidebarProps {
     isOpen: boolean
     toggleSidebar: () => void
+    menuItems: MenuItem[]
+    title?: string
+    onLogout?: () => void
+    userType?: string
 }
 
-export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
+export default function LeftBar({
+                                    isOpen,
+                                    toggleSidebar,
+                                    menuItems,
+                                    title = 'Admin Panel',
+                                    onLogout,
+                                    userType,
+                                }: SidebarProps) {
     const pathname = usePathname()
-    const menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
-        { icon: Gift, label: 'Rewards', path: '/admin/reward' },
-        { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: Settings, label: 'Cài đặt', path: '/admin/settings' },
-    ]
 
     return (
         <motion.aside
@@ -45,13 +49,15 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                                 transition={{ duration: 0.2 }}
                                 className="font-bold text-lg text-gray-800 truncate"
                             >
-                                Admin Panel
+                                {title}
                             </motion.h1>
                         )}
                     </AnimatePresence>
                 </div>
                 <button
+                    type="button"
                     onClick={toggleSidebar}
+                    aria-label={isOpen ? 'Đóng sidebar' : 'Mở sidebar'}
                     className="p-1 rounded hover:bg-gray-100"
                 >
                     {isOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
@@ -72,7 +78,6 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                                     ? 'text-indigo-600 font-medium border-l-4 border-indigo-600'
                                     : 'hover:bg-gray-100 text-gray-700'
                             }`}
-                            aria-current={active ? 'page' : undefined}
                         >
                             <Icon
                                 size={22}
@@ -95,6 +100,30 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                     )
                 })}
             </nav>
+
+            {/* LOGOUT BUTTON */}
+            {onLogout && (
+                <button
+                    type="button"
+                    onClick={onLogout}
+                    className="flex items-center px-4 py-3 mx-2 mb-3 text-sm text-gray-700 rounded-md hover:bg-gray-100"
+                >
+                    <LogOut size={20} className="text-gray-500" />
+                    <AnimatePresence>
+                        {isOpen && (
+                            <motion.span
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -8 }}
+                                transition={{ duration: 0.2 }}
+                                className="ml-3"
+                            >
+                                Đăng xuất
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+                </button>
+            )}
         </motion.aside>
     )
 }

@@ -5,34 +5,41 @@ import { usePathname } from "next/navigation"
 import Image from "next/image"
 import {
     LayoutDashboard,
-    Gift,
+    Home,
     Users,
     Settings,
     Bell,
     Search,
+    FileText,
+    DollarSign,
+    LogOut
 } from "lucide-react"
-import AdminGuard from "@/app/admin/middleWare/admin-guard"
-import LeftBar from "@/app/components/side-bar/LeftBar";
+import LandlordGuard from "@/app/landlord/middleware/landlord-guard"
+import LeftBar from "@/app/components/side-bar/LeftBar"
 
-export default function AdminLayout({
-                                        children,
-                                    }: Readonly<{ children: React.ReactNode }>) {
+type MenuItem = {
+    icon: React.ElementType
+    label: string
+    path: string
+}
+
+export default function LandlordLayout({
+    children,
+}: Readonly<{ children: React.ReactNode }>) {
     const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(true)
 
-    if (pathname.startsWith("/admin/passport")) {
+    if (pathname.startsWith("/landlord/passport")) {
         return <>{children}</>
     }
 
-    const menuItems = [
-        { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
-        { icon: Gift, label: "Rewards", path: "/admin/reward" },
-        { icon: Users, label: "Users", path: "/admin/users" },
-        { icon: Settings, label: "Cài đặt", path: "/admin/settings" },
-    ]
+    const handleLogout = () => {
+        localStorage.removeItem('access_token')
+        window.location.href = '/landlord/passport/login'
+    }
 
     return (
-        <AdminGuard>
+        <LandlordGuard>
             <div className="flex flex-col h-screen bg-gray-50 text-gray-800">
                 {/* HEADER */}
                 <header className="w-full bg-white border-b z-30 sticky top-0">
@@ -51,9 +58,9 @@ export default function AdminLayout({
                         {/* SEARCH BAR */}
                         <div className="flex-1 max-w-md mx-6 hidden md:flex">
                             <div className="relative w-full">
-                <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
-                  <Search size={16} />
-                </span>
+                                <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                                    <Search size={16} />
+                                </span>
                                 <input
                                     type="search"
                                     placeholder="Tìm kiếm..."
@@ -70,36 +77,38 @@ export default function AdminLayout({
                             >
                                 <Bell size={20} />
                                 <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                  3
-                </span>
+                                    3
+                                </span>
                             </button>
 
                             <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium">
-                                A
+                                CN
                             </div>
                         </div>
                     </div>
                 </header>
 
-                {/* MAIN ROW: sidebar + content */}
                 <div className="flex flex-1 overflow-hidden">
                     <LeftBar
                         isOpen={isOpen}
                         toggleSidebar={() => setIsOpen(!isOpen)}
                         menuItems={[
-                            { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
-                            { icon: Gift, label: "Rewards", path: "/admin/reward" },
-                            { icon: Users, label: "Users", path: "/admin/users" },
-                            { icon: Settings, label: "Cài đặt", path: "/admin/settings" },
+                            { icon: LayoutDashboard, label: "Tổng quan", path: "/landlord/dashboard" },
+                            { icon: Home, label: "Bất động sản", path: "/landlord/properties" },
+                            { icon: Users, label: "Người thuê", path: "/landlord/tenants" },
+                            { icon: FileText, label: "Hợp đồng", path: "/landlord/contracts" },
+                            { icon: DollarSign, label: "Tài chính", path: "/landlord/finance" },
+                            { icon: Settings, label: "Cài đặt", path: "/landlord/settings" },
                         ]}
-                        title="Admin Panel"
+                        onLogout={handleLogout}
+                        title="Bảng điều khiển chủ nhà"
                     />
-                    {/* MAIN CONTENT */}
+
                     <main className="flex-1 overflow-auto p-5 bg-gray-50">
                         <div className="w-full mx-auto">{children}</div>
                     </main>
                 </div>
             </div>
-        </AdminGuard>
+        </LandlordGuard>
     )
 }
