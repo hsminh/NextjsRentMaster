@@ -1,11 +1,11 @@
-// components/ui/number-input.tsx
 'use client'
 
 import { Input, InputProps } from './input'
-import { forwardRef, useState, useEffect } from 'react'
+import { forwardRef } from 'react'
 
-interface NumberInputProps extends Omit<InputProps, 'onChange' | 'value' | 'type'> {
-    value: number | undefined
+interface NumberInputProps
+    extends Omit<InputProps, 'onChange' | 'value' | 'type'> {
+    value?: number
     onChange: (value: number | undefined) => void
     min?: number
     max?: number
@@ -13,17 +13,6 @@ interface NumberInputProps extends Omit<InputProps, 'onChange' | 'value' | 'type
 
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     ({ value, onChange, onFocus, onBlur, ...props }, ref) => {
-        const [touched, setTouched] = useState(false)
-
-        // Handle focus to track first interaction
-        const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-            if (!touched) {
-                setTouched(true)
-            }
-            onFocus?.(e)
-        }
-
-        // Handle value changes
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = e.target.value
             if (newValue === '') {
@@ -36,17 +25,14 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             }
         }
 
-        // Display empty string until first focus
-        const displayValue = touched ? (value !== undefined ? value.toString() : '') : ''
-
         return (
             <Input
                 {...props}
                 ref={ref}
                 type="number"
-                value={displayValue}
+                value={value !== undefined ? value.toString() : ''}
                 onChange={handleChange}
-                onFocus={handleFocus}
+                onFocus={onFocus}
                 onBlur={onBlur}
             />
         )

@@ -1,15 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
 import { ApartmentForm } from '../../components/ApartmentForm'
 import { ApartmentAPI } from '../../api'
 import { ApartmentRequest } from '../../type/apartment'
 import { Loader2 } from 'lucide-react'
+import {Card} from "@/components/ui/card";
 
 export default function EditApartmentPage() {
   const params = useParams()
-  const router = useRouter()
   const [apartment, setApartment] = useState<ApartmentRequest | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -51,17 +51,12 @@ export default function EditApartmentPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Chỉnh sửa thông tin căn hộ</h1>
-        <p className="text-muted-foreground">
-          Cập nhật thông tin chi tiết về căn hộ của bạn
-        </p>
+      <div className="min-h-full">
+          <Card className="w-full">
+              <div className="px-6">
+                  <ApartmentForm isEdit={true} initialData={apartment}/>
+              </div>
+          </Card>
       </div>
-      
-      <div className="bg-white p-6 rounded-lg shadow">
-        <ApartmentForm initialData={apartment} isEdit />
-      </div>
-    </div>
   )
 }

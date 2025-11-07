@@ -1,7 +1,6 @@
 export enum ApartmentType {
-  FULL_APARTMENT = 'full_apartment',
-  PRIVATE_ROOM = 'private_room',
-  SHARED_ROOM = 'shared_room',
+  FULL_APARTMENT = 'FullApartment',
+  ROOM_BASED = 'RoomBased',
 }
 
 export enum ApartmentStatus {
@@ -12,8 +11,7 @@ export enum ApartmentStatus {
 
 export const ApartmentTypeLabels: Record<ApartmentType, string> = {
   [ApartmentType.FULL_APARTMENT]: 'Căn hộ nguyên căn',
-  [ApartmentType.PRIVATE_ROOM]: 'Phòng riêng',
-  [ApartmentType.SHARED_ROOM]: 'Phòng chung',
+  [ApartmentType.ROOM_BASED]: 'Thuê Theo Phòng',
 }
 
 export const ApartmentStatusLabels: Record<ApartmentStatus, string> = {

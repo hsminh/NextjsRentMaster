@@ -23,14 +23,29 @@ export default class AbstractRestApiClient {
         path: string,
         query?: UrlQueryType,
         body?: any,
-        headers?: HeadersInit,
+        headers?: HeadersInit
     ): Promise<T> {
         const url = this.buildRequestURL(path, query)
+
+        // ⚙️ Ưu tiên headers được truyền vào (từ API con)
         const mergedHeaders = { ...this.defaultHeaders, ...headers }
 
-        const config: RequestInit = { method, headers: mergedHeaders, credentials: 'include' }
+        const config: RequestInit = {
+            method,
+            headers: mergedHeaders,
+            credentials: 'include',
+        }
 
-        if (body && method !== 'GET') config.body = JSON.stringify(body)
+        if (body && method !== 'GET') {
+            const isFormData =
+                typeof body === 'object' && body instanceof FormData
+
+            config.body = isFormData ? body : JSON.stringify(body)
+
+            if (isFormData && (mergedHeaders as any)['Content-Type'] === 'multipart/form-data') {
+                delete (mergedHeaders as any)['Content-Type']
+            }
+        }
 
         try {
             const response = await fetch(url, config)
@@ -40,11 +55,7 @@ export default class AbstractRestApiClient {
                 ? await response.json()
                 : await response.text()
 
-            if (!response.ok) {
-                if (contentType?.includes('application/json')) throw data
-                else throw new Error(await response.text())
-            }
-
+            if (!response.ok) throw data
             return data
         } catch (error) {
             console.error(`[API Error] ${method} ${url}`, error)
@@ -61,7 +72,7 @@ export default class AbstractRestApiClient {
         return `${this.baseURL.replace(/\/$/, '')}/${path}${queryString ? '?' + queryString : ''}`
     }
 
-    // Generic REST methods
+    // --- Generic REST methods ---
     public get<T>(path: string, query?: UrlQueryType, headers?: HeadersInit): Promise<T> {
         return this.request('GET', path, query, undefined, headers)
     }

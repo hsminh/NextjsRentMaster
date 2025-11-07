@@ -24,6 +24,21 @@ export const useApartmentData: ColumnConfig<ApartmentRequest>[] = [
         render: (row) => row.title || 'N/A',
     },
     {
+        key: 'price',
+        label: 'price',
+        render: (row) => row.price || 'Chưa cập nhật',
+    },
+    {
+        key: 'status',
+        label: 'status',
+        render: (row) => row.status || 'Chưa cập nhật',
+    },
+    {
+        key: 'type',
+        label: 'type',
+        render: (row) => row.type || 'Chưa cập nhật',
+    },
+    {
         key: 'areaLength',
         label: 'areaLength',
         render: (row) => row.areaLength || 'Chưa cập nhật',
@@ -32,21 +47,6 @@ export const useApartmentData: ColumnConfig<ApartmentRequest>[] = [
         key: 'areaWidth',
         label: 'areaWidth',
         render: (row) => row.areaWidth || 'Chưa cập nhật',
-    },
-    {
-        key: 'quantity',
-        label: 'quantity',
-        render: (row) => row.quantity || 'Chưa cập nhật',
-    },
-    {
-        key: 'floorNumber',
-        label: 'floorNumber',
-        render: (row) => row.floorNumber || 'Chưa cập nhật',
-    },
-    {
-        key: 'totalFloors',
-        label: 'totalFloors',
-        render: (row) => row.totalFloors || 'Chưa cập nhật',
     },
     {
         key: 'uid',

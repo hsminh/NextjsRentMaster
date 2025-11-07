@@ -61,10 +61,10 @@ export default function ApartmentsPage() {
     const handleApartmentAction = (action: string, apartment: ApartmentRequest) => {
         switch (action) {
             case 'view':
-                router.push(`/admin/apartments/${apartment.uid}/details`)
+                router.push(`/landlord/apartments/${apartment.uid}/details`)
                 break
             case 'edit':
-                router.push(`/admin/apartments/${apartment.uid}/edit`)
+                router.push(`/landlord/apartments/${apartment.uid}/edit`)
                 break
             case 'delete':
                 setDeleteApartment(apartment)

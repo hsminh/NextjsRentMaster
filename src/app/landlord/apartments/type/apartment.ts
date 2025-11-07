@@ -3,17 +3,12 @@ export interface ApartmentRequest {
   price: number
   title: string
   description: string
-  addressDivisionUid: string
   areaLength: number
   areaWidth: number
-  quantity: number
-  floorNumber: number
-  totalFloors: number
-  type: 'full_apartment' | 'private_room' | 'shared_room'
+  type: 'FullApartment' | 'RoomBased'
   status: 'available' | 'rented' | 'maintenance'
+  Files: string[]
   images: string[]
-  createdAt?: string
-  updatedAt?: string
 }
 
 
