@@ -94,7 +94,8 @@ export default function LandlordLayout({
                         toggleSidebar={() => setIsOpen(!isOpen)}
                         menuItems={[
                             { icon: LayoutDashboard, label: "Tổng quan", path: "/landlord/dashboard" },
-                            { icon: Home, label: "Bất động sản", path: "/landlord/properties" },
+                            { icon: Home, label: "Căn hộ / Toà nhà", path: "/landlord/apartments" },
+                            { icon: Home, label: "Phòng cho thuê", path: "/landlord/rooms" },
                             { icon: Users, label: "Người thuê", path: "/landlord/tenants" },
                             { icon: FileText, label: "Hợp đồng", path: "/landlord/contracts" },
                             { icon: DollarSign, label: "Tài chính", path: "/landlord/finance" },

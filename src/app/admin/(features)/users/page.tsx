@@ -1,30 +1,32 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import DialogDelete from '@/components/ui/dialog-delete'
+import { DialogOption } from '@/components/ui/dialog-option'
 import type { AdminUser } from './types'
-import { AdminUsersAPI } from './api'
 import {
     createUserPath,
     UserActions,
     userPageSizeOptions,
     userSearchKeys,
-    userStatusOptions,
+    userStatusOptions as rawStatusOptions,
     useUserColumns
 } from './use/use-data-table'
+
 import ctoast from "@/components/ui/Toast"
-import {CDataTable} from "@/app/components/Table/CDataTable";
-import CLoading from "@/components/ui/CLoading";
+import { CDataTable } from "@/app/components/Table/CDataTable"
+import { AdminUsersAPI } from "@/app/admin/(features)/users/api"
+
+// Mở rộng AdminUser tạm thời để UI biết action
+type AdminUserWithAction = AdminUser & { action?: 'activate' | 'deactivate' }
+
+const userStatusOptions = [...rawStatusOptions] as Array<{ value: AdminUser['Status']; label: string }>
 
 export default function UsersPage() {
-    const router = useRouter()
-
     const [users, setUsers] = useState<AdminUser[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [deleteUser, setDeleteUser] = useState<AdminUser | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
+    const [userToUpdate, setUserToUpdate] = useState<AdminUserWithAction | null>(null)
+    const [isUpdating, setIsUpdating] = useState(false)
 
     const fetchUsers = async () => {
         setLoading(true)
@@ -43,38 +45,71 @@ export default function UsersPage() {
         fetchUsers()
     }, [])
 
-    const handleDeleteUser = async () => {
-        if (!deleteUser) return
-        setIsDeleting(true)
+    const handleUpdateUserStatus = async (uid: string, status: AdminUser['Status']) => {
+        if (!userToUpdate) {
+            ctoast.error('Không tìm thấy thông tin người dùng')
+            return
+        }
+
+        setIsUpdating(true)
         try {
             const api = new AdminUsersAPI()
-            await api.delete(deleteUser.uid)
-            setUsers((prev) => prev.filter((u) => u.uid !== deleteUser.uid))
-            setDeleteUser(null)
-            ctoast.success('Xóa Người Dùng Thành Công!')
+            const updateData = { ...userToUpdate, Status: status }
+
+            // Cập nhật server
+            await api.update(uid, updateData as any)
+
+            // Update state local
+            setUsers(prevUsers =>
+                prevUsers.map(user =>
+                    user.uid === uid ? { ...user, Status: status } : user
+                )
+            )
+
+            setUserToUpdate(null)
+            ctoast.success(`Đã cập nhật trạng thái người dùng thành ${status === 'Active' ? 'Hoạt động' : 'Vô hiệu hóa'}`)
         } catch (err: any) {
-            ctoast.error('Xóa Người Dùng Thất Bại!')
+            console.error('Error updating user status:', err)
+            ctoast.error(err.message || 'Có lỗi xảy ra khi cập nhật trạng thái')
         } finally {
-            setIsDeleting(false)
+            setIsUpdating(false)
         }
     }
+
+    const getDialogTitle = (action?: string) =>
+        action === 'deactivate'
+            ? 'Xác nhận vô hiệu hóa tài khoản'
+            : 'Xác nhận kích hoạt tài khoản'
+
+    const getDialogDescription = (user: AdminUserWithAction | null) => {
+        if (!user?.action) return ''
+        const userName = user.gmail || 'người dùng này'
+        return user.action === 'deactivate'
+            ? `Bạn có chắc chắn muốn vô hiệu hóa tài khoản ${userName}?`
+            : `Bạn có chắc chắn muốn kích hoạt lại tài khoản ${userName}?`
+    }
+
+    const getConfirmButtonText = (action?: string) =>
+        action === 'deactivate' ? 'Vô hiệu hóa' : 'Kích hoạt'
 
     const handleUserAction = (action: string, user: AdminUser) => {
         switch (action) {
             case 'view':
-                router.push(`/admin/users/${user.uid}/details`)
+                window.location.href = `/admin/users/${user.uid}/details`
                 break
             case 'edit':
-                router.push(`/admin/users/${user.uid}/edit`)
+                window.location.href = `/admin/users/${user.uid}/edit`
                 break
-            case 'delete':
-                setDeleteUser(user)
+            case 'deactivate':
+                setUserToUpdate({ ...user, action: 'deactivate' })
+                break
+            case 'activate':
+                setUserToUpdate({ ...user, action: 'activate' })
                 break
             default:
                 break
         }
     }
-
 
     if (error) {
         return (
@@ -87,7 +122,7 @@ export default function UsersPage() {
         )
     }
 
-    const columns = useUserColumns().map((col) => {
+    const columns = useUserColumns().map(col => {
         if (col.key === 'uid') {
             return {
                 ...col,
@@ -95,7 +130,7 @@ export default function UsersPage() {
                     <UserActions
                         user={row}
                         onAction={(action) => handleUserAction(action, row)}
-                        isLoading={isDeleting && deleteUser?.uid === row.uid}
+                        isLoading={isUpdating && userToUpdate?.uid === row.uid}
                     />
                 ),
             }
@@ -110,20 +145,27 @@ export default function UsersPage() {
                 createPath={createUserPath}
                 columns={columns}
                 searchKeys={userSearchKeys}
-                statusKey="isDelete"
+                statusKey="Status"
                 statusOptions={userStatusOptions}
                 pageSizeOptions={userPageSizeOptions}
                 loading={loading}
             />
 
-
-            <DialogDelete
-                isOpen={!!deleteUser}
-                onClose={() => setDeleteUser(null)}
-                onConfirm={handleDeleteUser}
-                isLoading={isDeleting}
-                title="Xác nhận xóa"
-                deleteQuestion={`Bạn có chắc chắn muốn xóa tài khoản ${deleteUser?.gmail}?`}
+            <DialogOption
+                isOpen={!!userToUpdate}
+                onClose={() => !isUpdating && setUserToUpdate(null)}
+                onConfirm={() => {
+                    if (!userToUpdate?.action) return
+                    const newStatus: AdminUser['Status'] =
+                        userToUpdate.action === 'deactivate' ? 'Inactive' : 'Active'
+                    handleUpdateUserStatus(userToUpdate.uid, newStatus)
+                }}
+                title={getDialogTitle(userToUpdate?.action)}
+                description={getDialogDescription(userToUpdate)}
+                variant={userToUpdate?.action === 'deactivate' ? 'destructive' : 'default'}
+                confirmText={getConfirmButtonText(userToUpdate?.action)}
+                isLoading={isUpdating}
+                disabled={isUpdating}
             />
         </>
     )

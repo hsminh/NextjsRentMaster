@@ -23,4 +23,8 @@ export class AdminUsersAPI extends AbstractRestApiClient {
   delete(uid: string): Promise<void> {
     return super.delete(`${this.base}/${uid}`)
   }
+
+  deactivate(uid: string): Promise<AdminUser> {
+    return this.put<AdminUser>(`${this.base}/${uid}`, undefined, { Status: 'Inactive' })
+  }
 }

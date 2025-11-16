@@ -8,7 +8,7 @@ import { X, ImagePlus } from 'lucide-react'
 interface CImageUploaderProps {
     multiple?: boolean
     defaultFiles?: string[]
-    onChange?: (files: File[], previews: string[]) => void
+    onChange?: (files: File[], previews: string[], allPreviews: string[]) => void
     required?: boolean
 }
 
@@ -21,9 +21,13 @@ const CImageUploader: React.FC<CImageUploaderProps> = ({
     const fileInputRef = useRef<HTMLInputElement | null>(null)
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [previewImages, setPreviewImages] = useState<string[]>([])
+    const [existingImages, setExistingImages] = useState<string[]>([])
 
     useEffect(() => {
-        if (defaultFiles.length > 0) setPreviewImages(defaultFiles)
+        if (defaultFiles.length > 0) {
+            setExistingImages(defaultFiles)
+            setPreviewImages(defaultFiles)
+        }
     }, [defaultFiles])
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,22 +35,49 @@ const CImageUploader: React.FC<CImageUploaderProps> = ({
         if (files) {
             const newFiles = Array.from(files)
             const newPreviews = newFiles.map((file) => URL.createObjectURL(file))
+
             const updatedFiles = multiple ? [...selectedFiles, ...newFiles] : newFiles
-            const updatedPreviews = multiple ? [...previewImages, ...newPreviews] : newPreviews
+            const updatedPreviews = multiple
+                ? [...previewImages, ...newPreviews]
+                : [...existingImages, ...newPreviews]
+
             setSelectedFiles(updatedFiles)
             setPreviewImages(updatedPreviews)
-            onChange?.(updatedFiles, updatedPreviews)
+
+            // Trả về: files mới, previews mới, tất cả previews (bao gồm cả ảnh cũ)
+            onChange?.(updatedFiles, newPreviews, updatedPreviews)
         }
     }
 
     const handleRemove = (index: number) => {
-        const updatedFiles = selectedFiles.filter((_, i) => i !== index)
+        const removedUrl = previewImages[index]
+        const isBlobUrl = removedUrl.startsWith('blob:')
+
+        let updatedFiles = selectedFiles
+
+        if (isBlobUrl) {
+            const fileIndex = selectedFiles.findIndex((_, i) => {
+                const blobIndex = existingImages.length + i
+                return blobIndex === index
+            })
+
+            if (fileIndex !== -1) {
+                updatedFiles = selectedFiles.filter((_, i) => i !== fileIndex)
+                setSelectedFiles(updatedFiles)
+            }
+            URL.revokeObjectURL(removedUrl)
+        } else {
+            const updatedExisting = existingImages.filter((url) => url !== removedUrl)
+            setExistingImages(updatedExisting)
+        }
+
         const updatedPreviews = previewImages.filter((_, i) => i !== index)
-        setSelectedFiles(updatedFiles)
         setPreviewImages(updatedPreviews)
-        onChange?.(updatedFiles, updatedPreviews)
+
+        // Trả về files đã cập nhật thay vì selectedFiles cũ
+        onChange?.(updatedFiles, [], updatedPreviews)
     }
-    console.log(defaultFiles)
+
     return (
         <div className="border rounded-lg p-4 bg-gray-50">
             <div className="flex items-center gap-3 mb-4">

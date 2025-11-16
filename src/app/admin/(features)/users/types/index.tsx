@@ -1,16 +1,15 @@
-export type AdminUser = {
-  gmail: string
-  scope?: string
-  password?: string
-  firstName?: string | null
-  lastName?: string | null
-  phoneNumber?: string | null
-  uid: string
-  createdAt?: string | null
-  updatedAt?: string | null
-  deletedAt?: string | null
-  isDelete?: boolean
+export interface AdminUser {
+    uid: string;
+    gmail: string;
+    Status: 'Active' | 'Inactive';
+    scope?: string;
+    password?: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    phoneNumber?: string | null;
+    isDelete?: boolean;
 }
+
 
 export type AdminUserCreateDTO = {
   gmail: string

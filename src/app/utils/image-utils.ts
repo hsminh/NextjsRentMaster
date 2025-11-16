@@ -1,4 +1,27 @@
 /**
+ * Xử lý các URL ảnh hiện có và chuyển đổi chúng thành File objects
+ * @param urls Mảng các URL ảnh hiện có
+ * @returns Promise<File[]> Mảng các File objects đã được xử lý
+ */
+export const processExistingImageUrls = async (urls: string[]): Promise<File[]> => {
+  const existingFiles = await Promise.all(
+    urls.map(async (url, index) => {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const filename = `old_image_${index}.${blob.type.split('/')[1] || 'jpg'}`;
+        return new File([blob], filename, { type: blob.type });
+      } catch (error) {
+        console.error(`Lỗi khi xử lý ảnh từ URL: ${url}`, error);
+        return null;
+      }
+    })
+  );
+
+  return existingFiles.filter((file): file is File => file instanceof File);
+};
+
+/**
  * Chuyển đổi blob URL thành File object
  * @param blobUrl URL của blob (bắt đầu bằng 'blob:')
  * @param filename Tên file (mặc định sẽ tự tạo nếu không cung cấp)
