@@ -14,8 +14,12 @@ export const apartmentFormSchema = z
             message: 'Vui lòng chọn trạng thái',
         }),
         Files: z.array(z.string()).optional(),
+        MetaData: z.string().min(1, 'Vui lòng nhập số nhà/địa chỉ'),
+        provinceDivisionUid: z.string().min(1, 'Vui lòng chọn Tỉnh / Thành phố'),
+        wardDivisionUid: z.string().optional(),
     })
     .superRefine((data, ctx) => {
+        // validate ảnh cho FullApartment
         if (data.type === 'FullApartment' && (!data.Files || data.Files.length === 0)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,

@@ -9,6 +9,10 @@ export interface ApartmentRequest {
   status: 'available' | 'rented' | 'maintenance'
   Files: string[]
   images: string[]
+  provinceDivisionUid: string
+  wardDivisionUid: string
+  MetaData?: string
+  metaData?: string
 }
 
 

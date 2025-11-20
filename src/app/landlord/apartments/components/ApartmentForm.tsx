@@ -17,9 +17,11 @@ import { Loader2 } from 'lucide-react'
 import ctoast from '@/components/ui/Toast'
 import { Textarea } from '@/components/ui/textarea'
 import { NumberInput } from '@/components/ui/number-input'
-import CImageUploader from "@/components/ui/CImageUploader"
+import CImageUploader from '@/components/ui/CImageUploader'
 import { isBlobUrl, revokePreviewUrl } from '@/app/utils/image-utils'
-import { createFormData } from "@/app/utils/form-utils"
+import { createFormData } from '@/app/utils/form-utils'
+import { AddressInterface } from '@/shared/types/response/address'
+import {AddressDivisionAPI} from "@/shared/api";
 
 interface ApartmentFormProps {
     initialData?: ApartmentRequest
@@ -31,27 +33,68 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [previewFiles, setPreviewFiles] = useState<string[]>([])
+    const [provinces, setProvinces] = useState<AddressInterface[]>([])
+    const [wards, setWards] = useState<AddressInterface[]>([])
 
     const form = useForm<ApartmentFormValues>({
         resolver: zodResolver(apartmentFormSchema),
-        defaultValues: initialData || {
-            title: '',
-            description: '',
-            price: 0,
-            areaLength: 0,
-            areaWidth: 0,
-            type: ApartmentType.FULL_APARTMENT,
-            status: ApartmentStatus.AVAILABLE,
-            Files: [],
+        defaultValues: {
+            title: initialData?.title || '',
+            description: initialData?.description || '',
+            price: initialData?.price || 0,
+            areaLength: initialData?.areaLength || 0,
+            areaWidth: initialData?.areaWidth || 0,
+            type: (initialData?.type as ApartmentType) || ApartmentType.FULL_APARTMENT,
+            status: (initialData?.status as ApartmentStatus) || ApartmentStatus.AVAILABLE,
+            Files: initialData?.images || [],
+            provinceDivisionUid: initialData?.provinceDivisionUid || undefined,
+            wardDivisionUid: initialData?.wardDivisionUid || undefined,
+            MetaData: initialData?.metaData || '',
         },
     })
+
+    const isDisabled = isDetails || isLoading
+    const currentType = form.watch('type')
+
+    // Load provinces
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            try {
+                const api = new AddressDivisionAPI()
+                const data = await api.listProvinces()
+                setProvinces(data)
+            } catch (e) {
+                console.error(e)
+                ctoast.error('Không tải được danh sách tỉnh/thành')
+            }
+        }
+
+        fetchProvinces()
+    }, [])
+
+    useEffect(() => {
+        const provinceUid = initialData?.provinceDivisionUid
+        if (!provinceUid) return
+
+        const fetchWards = async () => {
+            try {
+                const api = new AddressDivisionAPI()
+                const data = await api.listWards(provinceUid)
+                setWards(data)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+
+        fetchWards()
+    }, [initialData?.provinceDivisionUid])
 
     useEffect(() => {
         if ((isEdit || isDetails) && initialData?.images?.length) {
             setPreviewFiles(initialData.images)
             form.setValue('Files', initialData.images)
         }
-    }, [isEdit, isDetails, initialData])
+    }, [isEdit, isDetails, initialData, form])
 
     useEffect(() => {
         return () => {
@@ -62,6 +105,23 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
             }
         }
     }, [previewFiles])
+
+    const handleProvinceChange = async (uid: string) => {
+        form.setValue('provinceDivisionUid', uid)
+        form.setValue('wardDivisionUid', undefined)
+        setWards([])
+
+        if (!uid) return
+
+        try {
+            const api = new AddressDivisionAPI()
+            const data = await api.listWards(uid) // parentCode = province uid
+            setWards(data)
+        } catch (e) {
+            console.error(e)
+            ctoast.error('Không tải được danh sách phường/xã')
+        }
+    }
 
     const onSubmit = async (values: ApartmentFormValues) => {
         if (isDetails) return
@@ -88,12 +148,10 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
         }
     }
 
-    const currentType = form.watch('type')
-    const isDisabled = isDetails || isLoading || isEdit
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Thông tin cơ bản */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                         control={form.control}
@@ -167,6 +225,83 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
                     />
                 </div>
 
+                {/* Địa chỉ: Province + Ward */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="provinceDivisionUid"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Tỉnh / Thành phố</FormLabel>
+                                <Select
+                                    disabled={isDisabled}
+                                    value={field.value}
+                                    onValueChange={(val) => handleProvinceChange(val)}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger className="w-full h-12">
+                                            <SelectValue placeholder="Chọn tỉnh / thành" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {provinces.map((p) => (
+                                            <SelectItem key={p.uid} value={p.uid}>
+                                                {p.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="wardDivisionUid"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Phường / Xã</FormLabel>
+                                <Select
+                                    disabled={isDisabled || wards.length === 0}
+                                    value={field.value}
+                                    onValueChange={(val) => form.setValue('wardDivisionUid', val)}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger className="w-full h-12">
+                                            <SelectValue placeholder="Chọn phường / xã" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {wards.map((w) => (
+                                            <SelectItem key={w.uid} value={w.uid}>
+                                                {w.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <FormField
+                    control={form.control}
+                    name="MetaData"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Số nhà/Địa chỉ</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Ví dụ: 123 Đường ABC"
+                                    {...field}
+                                    disabled={isDisabled}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <FormField
                     control={form.control}
                     name="description"
@@ -185,6 +320,8 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
                         </FormItem>
                     )}
                 />
+
+
 
                 <FormField
                     control={form.control}
