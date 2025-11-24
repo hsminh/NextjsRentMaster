@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { ApartmentForm } from '../../components/ApartmentForm'
 import { ApartmentAPI } from '../../api'
 import { ApartmentRequest } from '../../type/apartment'
 import { Loader2 } from 'lucide-react'
 import { Card } from "@/components/ui/card"
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
 
 export default function DetailApartmentPage() {
     const params = useParams()
@@ -51,11 +53,14 @@ export default function DetailApartmentPage() {
     }
 
     return (
-        <div className="min-h-full">
+        <div className="min-h-full space-y-4">
+            <BreadcrumbNavigation {...getApartmentDetailBreadcrumb} />
             <Card className="w-full">
-                <div className="px-6">
-                    {/* Truyền isDetails để chỉ xem chi tiết, không cho chỉnh sửa */}
-                    <ApartmentForm isDetails={true} initialData={apartment} />
+                <div className="px-6 py-6">
+                    <ApartmentForm
+                      isDetails={true} 
+                      initialData={apartment}
+                    />
                 </div>
             </Card>
         </div>
