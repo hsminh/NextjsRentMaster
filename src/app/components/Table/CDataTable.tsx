@@ -28,6 +28,14 @@ import {
     DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu'
 import {
+    Breadcrumb,
+    BreadcrumbList,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbSeparator,
+    BreadcrumbPage,
+} from '@/components/ui/breadcrumb'
+import {
     Settings2,
     ChevronLeft,
     ChevronRight,
@@ -36,6 +44,7 @@ import {
     PlusCircle,
     LayoutGrid,
     Search,
+    Home,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -43,6 +52,11 @@ export interface ColumnConfig<T> {
     key: keyof T
     label: string
     render?: (row: T) => React.ReactNode
+}
+
+interface BreadcrumbItem {
+    label: string
+    href?: string
 }
 
 interface DataTableProps<T> {
@@ -56,6 +70,7 @@ interface DataTableProps<T> {
     pageSizeOptions?: number[]
     loading?: boolean
     error?: string | null
+    breadcrumbItems?: BreadcrumbItem[]
 }
 
 export function CDataTable<T extends Record<string, any>>({
@@ -73,6 +88,7 @@ export function CDataTable<T extends Record<string, any>>({
                                                               pageSizeOptions = [10, 20, 30, 40, 50],
                                                               loading = false,
                                                               error = null,
+                                                              breadcrumbItems = [],
                                                           }: DataTableProps<T>) {
     // State
     const [search, setSearch] = useState('')
@@ -125,6 +141,50 @@ export function CDataTable<T extends Record<string, any>>({
     const toggleColumn = useCallback((key: keyof T) => {
         setVisibleColumns((prev) => ({ ...prev, [key]: !prev[key as string] }))
     }, [])
+
+    // Breadcrumb Component
+    const BreadcrumbNavigation = () => {
+        if (!breadcrumbItems.length) return null
+
+        return (
+            <Breadcrumb className="mb-6">
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <BreadcrumbLink href="/" className="flex items-center gap-1">
+                            <Home size={16} />
+                            Trang chủ
+                        </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    {breadcrumbItems.map((item, index) => {
+                        const isLast = index === breadcrumbItems.length - 1
+
+                        return (
+                            <React.Fragment key={index}>
+                                <BreadcrumbItem>
+                                    {isLast ? (
+                                        <BreadcrumbPage className="font-semibold text-gray-900">
+                                            {item.label}
+                                        </BreadcrumbPage>
+                                    ) : item.href ? (
+                                        <BreadcrumbLink
+                                            href={item.href}
+                                            className="text-gray-600 hover:text-gray-900"
+                                        >
+                                            {item.label}
+                                        </BreadcrumbLink>
+                                    ) : (
+                                        <span className="text-gray-600">{item.label}</span>
+                                    )}
+                                </BreadcrumbItem>
+                                {!isLast && <BreadcrumbSeparator />}
+                            </React.Fragment>
+                        )
+                    })}
+                </BreadcrumbList>
+            </Breadcrumb>
+        )
+    }
 
     // Subcomponents
     const StatusFilterButton = () => {
@@ -289,6 +349,8 @@ export function CDataTable<T extends Record<string, any>>({
                 <div className="text-center text-red-500 py-10">{error}</div>
             ) : (
                 <div className="space-y-4">
+                    <BreadcrumbNavigation />
+
                     <HeaderActions />
 
                     <div className="bg-white border rounded-sm overflow-hidden shadow-sm">

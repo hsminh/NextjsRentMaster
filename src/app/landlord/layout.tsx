@@ -15,7 +15,7 @@ import {
     LogOut
 } from "lucide-react"
 import LandlordGuard from "@/app/landlord/middleware/landlord-guard"
-import LeftBar from "@/app/components/side-bar/LeftBar"
+import LeftBar from "@/app/components/layout/LeftBar"
 
 type MenuItem = {
     icon: React.ElementType

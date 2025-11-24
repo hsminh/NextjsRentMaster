@@ -12,7 +12,7 @@ import {
     Search,
 } from "lucide-react"
 import AdminGuard from "@/app/admin/middleWare/admin-guard"
-import LeftBar from "@/app/components/side-bar/LeftBar";
+import LeftBar from "@/app/components/layout/LeftBar";
 
 export default function AdminLayout({
                                         children,

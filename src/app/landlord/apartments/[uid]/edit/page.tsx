@@ -2,11 +2,15 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { ApartmentForm } from '../../components/ApartmentForm'
 import { ApartmentAPI } from '../../api'
 import { ApartmentRequest } from '../../type/apartment'
 import { Loader2 } from 'lucide-react'
 import {Card} from "@/components/ui/card";
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {
+     apartmentEditBreadcrumb,
+} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
 
 export default function EditApartmentPage() {
   const params = useParams()
@@ -51,10 +55,14 @@ export default function EditApartmentPage() {
   }
 
   return (
-      <div className="min-h-full">
+      <div className="min-h-full space-y-4">
+          <BreadcrumbNavigation {...apartmentEditBreadcrumb} />
           <Card className="w-full">
-              <div className="px-6">
-                  <ApartmentForm isEdit={true} initialData={apartment}/>
+              <div className="px-6 py-6">
+                  <ApartmentForm
+                    isEdit={true} 
+                    initialData={apartment}
+                  />
               </div>
           </Card>
       </div>

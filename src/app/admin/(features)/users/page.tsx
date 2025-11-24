@@ -165,7 +165,6 @@ export default function UsersPage() {
                 variant={userToUpdate?.action === 'deactivate' ? 'destructive' : 'default'}
                 confirmText={getConfirmButtonText(userToUpdate?.action)}
                 isLoading={isUpdating}
-                disabled={isUpdating}
             />
         </>
     )

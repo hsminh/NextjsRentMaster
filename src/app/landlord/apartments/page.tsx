@@ -7,15 +7,17 @@ import ctoast from '@/components/ui/Toast'
 import { CDataTable } from '@/app/components/Table/CDataTable'
 
 
-import {    useApartmentData,
+import {
+    useApartmentData,
     createApartmentPath,
     apartmentSearchKeys,
     apartmentStatusOptions,
     apartmentPageSizeOptions,
-    ApartmentActions
+    ApartmentActions, apartmentListBreadcrumb
 } from "@/app/landlord/apartments/use/use-apartment-data";
 import {ApartmentAPI} from "@/app/landlord/apartments/api";
 import {ApartmentRequest} from "@/app/landlord/apartments/type/apartment";
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
 
 export default function ApartmentsPage() {
     const router = useRouter()
@@ -103,6 +105,7 @@ export default function ApartmentsPage() {
 
     return (
         <>
+            <BreadcrumbNavigation {...apartmentListBreadcrumb} />
             <CDataTable
                 data={apartments}
                 createPath={createApartmentPath}
