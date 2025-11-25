@@ -59,8 +59,8 @@ export default function RoomsSection({ rooms, onReload }: RoomsSectionProps) {
         <Badge variant="outline" className="px-4 py-2 text-base">
             🛏️ Phòng trọ
         </Badge>
-        <h2 className="text-4xl font-bold tracking-tight">Giải pháp linh hoạt</h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <h2 className="text-4xl font-bold tracking-tight ">Giải pháp linh hoạt</h2>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto ">
             {rooms.length} phòng trọ tiện nghi, phù hợp cho sinh viên và người đi làm
         </p>
     </div>
@@ -97,7 +97,7 @@ export default function RoomsSection({ rooms, onReload }: RoomsSectionProps) {
                     </div>
 
                     <CardHeader className="pb-4">
-                        <CardTitle className="text-lg text-green-600">Phòng trọ</CardTitle>
+                        <CardTitle className="text-lg ">Phòng trọ</CardTitle>
                         <CardDescription className="line-clamp-2">
                             {room.description}
                         </CardDescription>
@@ -105,7 +105,7 @@ export default function RoomsSection({ rooms, onReload }: RoomsSectionProps) {
 
                     <CardContent className="pb-4 space-y-3">
                         <div className="flex items-center justify-between">
-                            <div className="text-2xl font-bold text-green-600">
+                            <div className="text-2xl font-bold ">
                                 {formatPrice(room.price)}
                                 <span className="text-sm font-normal text-muted-foreground">/tháng</span>
                             </div>
@@ -118,7 +118,7 @@ export default function RoomsSection({ rooms, onReload }: RoomsSectionProps) {
                     </CardContent>
 
                     <CardFooter className="flex flex-col gap-2" >
-                        <Button className="w-full group/btn" size="sm" variant="outline">
+                        <Button className="w-full group/btn" size="sm">
                           <span className="group-hover/btn:translate-x-1 transition-transform">
                             Xem chi tiết
                           </span>

@@ -8,7 +8,9 @@ import ctoast from "@/components/ui/Toast"
 import { Card } from "@/components/ui/card"
 import LandLordComponentForm from '@/app/admin/(features)/users/components/LandLordComponentForm'
 import { Loader2 } from 'lucide-react'
-
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
 export default function UserDetailsPage() {
     const params = useParams() as { id?: string }
     const id = params?.id
@@ -51,13 +53,16 @@ export default function UserDetailsPage() {
         )
     }
 
-    return (
+    return (<div className="min-h-full space-y-4">
+        <BreadcrumbNavigation {...getApartmentDetailBreadcrumb} />
+        
         <div className="min-h-full">
             <Card className="w-full mt-4">
                 <div className="p-6">
                     <LandLordComponentForm isEdit={false} isDetails={true} initialData={user} />
                 </div>
             </Card>
+        </div>
         </div>
     )
 }

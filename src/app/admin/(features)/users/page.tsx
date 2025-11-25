@@ -15,7 +15,10 @@ import {
 import ctoast from "@/components/ui/Toast"
 import { CDataTable } from "@/app/components/Table/CDataTable"
 import { AdminUsersAPI } from "@/app/admin/(features)/users/api"
-
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
+import {roomListBreadcrumb} from "@/app/landlord/rooms/use/use-room-data";
 // Mở rộng AdminUser tạm thời để UI biết action
 type AdminUserWithAction = AdminUser & { action?: 'activate' | 'deactivate' }
 
@@ -114,6 +117,7 @@ export default function UsersPage() {
     if (error) {
         return (
             <div className="flex justify-center items-center h-screen">
+                
                 <div className="text-red-500 text-center">
                     <p>Đã xảy ra lỗi khi tải dữ liệu</p>
                     <p className="text-sm text-gray-600 mt-2">{error}</p>
@@ -139,7 +143,8 @@ export default function UsersPage() {
     })
 
     return (
-        <>
+        <>  <div className="min-h-full space-y-4">
+            <BreadcrumbNavigation {...roomListBreadcrumb} />
             <CDataTable
                 data={users}
                 createPath={createUserPath}
@@ -150,6 +155,7 @@ export default function UsersPage() {
                 pageSizeOptions={userPageSizeOptions}
                 loading={loading}
             />
+        </div>
 
             <DialogOption
                 isOpen={!!userToUpdate}

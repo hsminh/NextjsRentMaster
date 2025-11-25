@@ -7,6 +7,11 @@ import { Card } from "@/components/ui/card"
 import {ApartmentRoomRequest} from "@/app/landlord/rooms/type/apartment";
 import {RoomAPI} from "@/app/landlord/rooms/api";
 import {ApartmentRoomForm} from "@/app/landlord/rooms/components/ApartmentRoomForm";
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
+import {roomDetailBreadcrumb} from "@/app/landlord/rooms/use/use-room-data";
+
 
 export default function DetailApartmentRoomPage() {
     const params = useParams()
@@ -51,12 +56,15 @@ export default function DetailApartmentRoomPage() {
     }
 
     return (
+        <div className="min-h-full space-y-4">
+            <BreadcrumbNavigation {...roomDetailBreadcrumb} />
         <div className="min-h-full">
             <Card className="w-full">
                 <div className="px-6">
                     <ApartmentRoomForm isDetails={true} initialData={apartment} />
                 </div>
             </Card>
+        </div>
         </div>
     )
 }
