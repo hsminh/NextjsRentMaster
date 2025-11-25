@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from './redux-provider'
 import {Toaster} from "sonner";
+import localFont from 'next/font/local'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,6 +14,19 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+const hb75 = localFont({
+    src: [
+        {
+            path: '../../fonts/HB75.ttf',
+            weight: '400'
+        },
+        {
+            path:  '../../fonts/HB75.ttf',
+            weight: '700'
+        }
+    ],
+    variable: '--font-hb75'
+})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}>
+      <body className={`  ${hb75.variable} antialiased bg-white text-gray-900`}>
         <ReduxProvider>
             <Toaster position="bottom-right" />
             {children}
