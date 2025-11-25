@@ -161,7 +161,7 @@ export default function ApartmentsSection({ apartments, loading = false }: Apart
                                 Hiện chưa có căn hộ nào được đăng tải. Hãy quay lại sau để xem các căn hộ mới!
                             </p>
                         </div>
-                        <Button variant="outline" onClick={fetchData}>
+                        <Button variant="outline" >
                             Tải lại trang
                         </Button>
                     </CardContent>
