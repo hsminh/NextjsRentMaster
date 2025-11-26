@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type UserType = 'admin' | 'landlord' | null
+export type UserType = 'admin' | 'landlord' | 'consumer' | null
 
 type AuthState = {
   token: string | null

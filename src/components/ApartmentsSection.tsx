@@ -1,19 +1,17 @@
 
 "use client";
 
-import Link from "next/link";
-import { useState, useEffect } from 'react';
 
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {MapPin, Home, Building, Star, Shield, DollarSign, Badge} from 'lucide-react';
-import { Info, Mail, User, Plus } from "lucide-react"
+import {MapPin, Home, Building, Badge, LogIn} from 'lucide-react';
 
 
-import { publicApartmentAPI, publicApartmentRoomAPI } from '@/app/(consumer)/api';
 import { ApartmentRequest } from "@/app/landlord/apartments/type/apartment";
 import { ApartmentRoomRequest } from "@/app/landlord/rooms/type/apartment";
+import {useAppSelector} from "@/store";
+import Link from "next/link";
 
 interface ApartmentsSectionProps {
     apartments: ApartmentRequest[];
@@ -53,6 +51,13 @@ const getFullAddress = (item: ApartmentRequest | ApartmentRoomRequest) => {
 
 
 export default function ApartmentsSection({ apartments, loading = false }: ApartmentsSectionProps) {
+    const { isLoggedIn, userType } = useAppSelector((state) => ({
+        isLoggedIn: state.auth.isLoggedIn,
+        userType: state.auth.userType
+    }));
+
+    const isConsumer = isLoggedIn && userType === 'consumer';
+
     if (loading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -81,7 +86,7 @@ export default function ApartmentsSection({ apartments, loading = false }: Apart
                         <Card key={apartment.uid}
                               className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20">
                             <div className="relative h-48 bg-muted overflow-hidden">
-                                {apartment.images && apartment.images.length > 0 ? (
+                                {apartment.images && apartment.images.length > 0 && apartment.images[0] ? (
                                     <Image
                                         src={apartment.images[0]}
                                         alt={apartment.title}
@@ -135,21 +140,32 @@ export default function ApartmentsSection({ apartments, loading = false }: Apart
 
                             <CardFooter className="flex flex-col gap-2">
                                 <Button className="w-full group/btn" size="sm">
-    <span className="group-hover/btn:translate-x-1 transition-transform">
-      Xem chi tiết
-    </span>
+                                    <span className="group-hover/btn:translate-x-1 transition-transform">
+                                        Xem chi tiết
+                                    </span>
                                 </Button>
-                                <Button className="w-full group/btn" size="sm" variant="outline">
-    <span className="group-hover/btn:translate-x-1 transition-transform">
-      Tham gia trọ
-    </span>
-                                </Button>
-                            </CardFooter>
 
+                                {isConsumer ? (
+                                    <Button className="w-full group/btn" size="sm" variant="outline">
+                                        <span className="group-hover/btn:translate-x-1 transition-transform">
+                                            Tham gia trọ
+                                        </span>
+                                    </Button>
+                                ) : (
+                                    <Link href={"/consumer/passport/login"} className="w-full">
+                                        <Button className="w-full group/btn" size="sm" variant="outline">
+                                            <LogIn className="w-4 h-4 mr-2" />
+                                            <span className="group-hover/btn:translate-x-1 transition-transform">
+                                                Đăng nhập để tham gia
+                                            </span>
+                                        </Button>
+                                    </Link>
+                                )}
+                            </CardFooter>
                         </Card>
                     ))}
                 </div>
-            ) : (
+            )  : (
                 <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-16 text-center space-y-4">
                         <div className="p-4 bg-muted rounded-full">

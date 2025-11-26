@@ -7,13 +7,14 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {MapPin, Home, Building, Star, Shield, DollarSign, Badge} from 'lucide-react';
+import {MapPin, Home, Building, Star, Shield, DollarSign, Badge, LogIn} from 'lucide-react';
 import { Info, Mail, User, Plus } from "lucide-react"
 
 
-import { publicApartmentAPI, publicApartmentRoomAPI } from '@/app/(consumer)/api';
+import { publicApartmentAPI, publicApartmentRoomAPI } from '@/app/(consumer)/consumer/api';
 import { ApartmentRequest } from "@/app/landlord/apartments/type/apartment";
 import { ApartmentRoomRequest } from "@/app/landlord/rooms/type/apartment";
+import {useAppSelector} from "@/store";
 
 interface RoomsSectionProps {
     rooms: ApartmentRoomRequest[];
@@ -53,6 +54,12 @@ const getFullAddress = (item: ApartmentRequest | ApartmentRoomRequest) => {
 };
 
 export default function RoomsSection({ rooms, onReload }: RoomsSectionProps) {
+    const { isLoggedIn, userType } = useAppSelector((state) => ({
+        isLoggedIn: state.auth.isLoggedIn,
+        userType: state.auth.userType
+    }));
+
+    const isConsumer = isLoggedIn && userType === 'consumer';
     return (
     <div className="space-y-8">
     <div className="text-center space-y-4">
@@ -124,11 +131,22 @@ export default function RoomsSection({ rooms, onReload }: RoomsSectionProps) {
                           </span>
 
                         </Button>
-                        <Button className="w-full group/btn" size="sm" variant="outline">
-    <span className="group-hover/btn:translate-x-1 transition-transform">
-      Tham gia trọ
-    </span>
-                        </Button>
+                        {isConsumer ? (
+                            <Button className="w-full group/btn" size="sm" variant="outline">
+                                        <span className="group-hover/btn:translate-x-1 transition-transform">
+                                            Tham gia trọ
+                                        </span>
+                            </Button>
+                        ) : (
+                            <Link href="/consumer/passport/login" className="w-full">
+                                <Button className="w-full group/btn" size="sm" variant="outline">
+                                    <LogIn className="w-4 h-4 mr-2" />
+                                    <span className="group-hover/btn:translate-x-1 transition-transform">
+                                                Đăng nhập để tham gia
+                                            </span>
+                                </Button>
+                            </Link>
+                        )}
                     </CardFooter>
                 </Card>
             ))}

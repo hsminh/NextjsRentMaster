@@ -10,7 +10,7 @@ import {MapPin, Home, Building, Star, Shield, DollarSign, Badge} from 'lucide-re
 import { Info, Mail, User, Plus } from "lucide-react"
 
 
-import { publicApartmentAPI, publicApartmentRoomAPI } from '@/app/(consumer)/api';
+import { publicApartmentAPI, publicApartmentRoomAPI } from '@/app/(consumer)/consumer/api';
 import { ApartmentRequest } from "@/app/landlord/apartments/type/apartment";
 import { ApartmentRoomRequest } from "@/app/landlord/rooms/type/apartment";
 export default function Navbar() {
