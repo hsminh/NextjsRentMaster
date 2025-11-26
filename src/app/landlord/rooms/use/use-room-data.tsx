@@ -10,6 +10,40 @@ import { RoomRequest } from "@/app/landlord/rooms/api"
 export const createRoomPath = '/landlord/rooms/create'
 export const roomSearchKeys: (keyof RoomRequest)[] = ['areaLength', 'areaWidth', 'roomNumber']
 export const roomPageSizeOptions = [5, 10, 25, 50]
+export const roomListBreadcrumb = {
+    homeHref: "/landlord",
+    homeLabel: "Chủ trọ",
+    items: [
+        { label: "Phòng", href: "/landlord/rooms" },
+        { label: "Danh sách" }
+    ]
+}
+export const roomCreateBreadcrumb = {
+    homeHref: "/landlord",
+    homeLabel: "Chủ trọ",
+    items: [
+        { label: "Phòng", href: "/landlord/rooms" },
+        { label: "Tạo mới" }
+    ]
+}
+
+export const roomEditBreadcrumb = {
+    homeHref: "/landlord",
+    homeLabel: "Chủ trọ",
+    items: [
+        { label: "Phòng", href: "/landlord/rooms" },
+        { label: "Chỉnh sửa" }
+    ]
+}
+
+export const roomDetailBreadcrumb = {
+    homeHref: "/landlord",
+    homeLabel: "Chủ trọ",
+    items: [
+        { label: "Phòng", href: "/landlord/rooms" },
+        { label: "Chi tiết phòng" }
+    ]
+}
 
 export const roomStatusOptions = [
     { value: 'all', label: 'Tất cả' },

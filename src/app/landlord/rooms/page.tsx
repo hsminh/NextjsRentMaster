@@ -15,7 +15,9 @@ import {
     RoomActions
 } from "@/app/landlord/rooms/use/use-room-data";
 import { RoomAPI, RoomRequest } from "@/app/landlord/rooms/api";
-
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
 export default function RoomsPage() {
     const router = useRouter()
     const [rooms, setRooms] = useState<RoomRequest[]>([])
@@ -102,6 +104,8 @@ export default function RoomsPage() {
 
     return (
         <>
+            <div className="min-h-full space-y-4">
+                <BreadcrumbNavigation {...getApartmentDetailBreadcrumb} />
             <CDataTable
                 data={rooms}
                 createPath={createRoomPath}
@@ -121,6 +125,8 @@ export default function RoomsPage() {
                 title="Xác nhận xóa"
                 deleteQuestion={`Bạn có chắc chắn muốn xóa phòng "${deleteRoom?.roomNumber}" không?`}
             />
+            </div>
         </>
+            
     )
 }

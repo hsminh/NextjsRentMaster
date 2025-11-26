@@ -18,6 +18,9 @@ import ctoast from "@/components/ui/Toast"
 import { AdminUsersAPI } from '@/app/admin/(features)/users/api'
 import type { AdminUser, AdminUserCreateDTO } from '@/app/admin/(features)/users/types'
 import { userSchema } from '@/app/admin/(features)/users/types/validator'
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
 
 type UserFormValues = z.infer<typeof userSchema>
 
@@ -63,10 +66,13 @@ export default function LandLordComponentForm({ isEdit, isDetails = false, initi
 
     return (
         <div className="w-full">
+
+            <div className="min-h-full space-y-4">
+                <BreadcrumbNavigation {...getApartmentDetailBreadcrumb} />
             <h1 className="text-2xl font-semibold mb-6 text-gray-800">
                 {isDetails ? 'Chi tiết người dùng' : isEdit ? 'Chỉnh sửa người dùng' : 'Tạo người dùng mới'}
             </h1>
-
+            </div>
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(handleSubmit)}

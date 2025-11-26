@@ -9,7 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 import CLoading from "@/components/ui/CLoading";
-
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
 
 const mockData = {
     totalProperties: 50,
@@ -72,6 +74,7 @@ export default function LandlordDashboard() {
 
     return (
         <div className="space-y-6 p-6">
+            <div className="min-h-full space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
@@ -82,6 +85,7 @@ export default function LandlordDashboard() {
                     <Calendar className="h-4 w-4" />
                     Cập nhật 5 phút trước
                 </button>
+            </div>
             </div>
 
             {/* Stats Grid */}

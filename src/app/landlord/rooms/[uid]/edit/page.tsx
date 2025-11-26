@@ -9,6 +9,11 @@ import {ApartmentRoomRequest} from "@/app/landlord/rooms/type/apartment";
 import {RoomAPI} from "@/app/landlord/rooms/api";
 import {ApartmentRoomForm} from "@/app/landlord/rooms/components/ApartmentRoomForm";
 
+import {BreadcrumbNavigation} from "@/app/components/layout/BreadcrumbNavigation";
+import {getApartmentDetailBreadcrumb} from "@/app/landlord/apartments/use/use-apartment-data";
+import {ApartmentForm} from "@/app/landlord/apartments/components/ApartmentForm";
+import {roomEditBreadcrumb} from "@/app/landlord/rooms/use/use-room-data";
+
 export default function EditApartmentPage() {
     const params = useParams()
     const [apartment, setApartment] = useState<ApartmentRoomRequest | null>(null)
@@ -53,11 +58,14 @@ export default function EditApartmentPage() {
 
   return (
       <div className="min-h-full">
+          <div className="min-h-full space-y-4">
+              <BreadcrumbNavigation {...roomEditBreadcrumb} />
           <Card className="w-full">
               <div className="px-6">
                   <ApartmentRoomForm isEdit={true} initialData={apartment} />
               </div>
           </Card>
+      </div>
       </div>
   )
 }
