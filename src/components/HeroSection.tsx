@@ -1,18 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useEffect } from 'react';
-
-import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {MapPin, Home, Building, Star, Shield, DollarSign, Badge} from 'lucide-react';
-import { Info, Mail, User, Plus } from "lucide-react"
-
-
-import { publicApartmentAPI, publicApartmentRoomAPI } from '@/app/(consumer)/api';
-import { ApartmentRequest } from "@/app/landlord/apartments/type/apartment";
-import { ApartmentRoomRequest } from "@/app/landlord/rooms/type/apartment";
+import { Building, Badge} from 'lucide-react';
 
 export default function HeroSection() {
     return (

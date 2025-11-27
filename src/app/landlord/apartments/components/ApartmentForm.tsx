@@ -36,7 +36,6 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
     const [provinces, setProvinces] = useState<AddressInterface[]>([])
     const [wards, setWards] = useState<AddressInterface[]>([])
 
-    // Xác định title dựa trên mode
     const getFormTitle = () => {
         if (isDetails) return 'Chi tiết căn hộ'
         if (isEdit) return 'Chỉnh sửa căn hộ'
@@ -64,7 +63,6 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
     const currentType = form.watch('type')
     const formTitle = getFormTitle()
 
-    // Load provinces
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
