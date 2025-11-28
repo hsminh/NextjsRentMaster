@@ -30,6 +30,7 @@ interface ApartmentFilterProps {
         maxPrice?: number;
         wardDivisionUid?: string;
         provinceDivisionUid?: string;
+        streetUid?: string;
     }) => void;
 }
 
@@ -45,20 +46,27 @@ export function ApartmentFilter({ onFilter }: ApartmentFilterProps) {
             maxPrice: 10000000,
             wardDivisionUid: '',
             provinceDivisionUid: '',
+            streetUid: '',
         }
     });
 
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
     const [provinces, setProvinces] = useState<Division[]>([]);
     const [wards, setWards] = useState<Division[]>([]);
+    const [streets, setStreets] = useState<Division[]>([]);
     const [openProvince, setOpenProvince] = useState(false);
     const [openWard, setOpenWard] = useState(false);
+    const [openStreet, setOpenStreet] = useState(false);
+    const [loadingWards, setLoadingWards] = useState(false);
+    const [loadingStreets, setLoadingStreets] = useState(false);
 
     const selectedProvince = watch('provinceDivisionUid');
     const selectedWard = watch('wardDivisionUid');
+    const selectedStreet = watch('streetUid');
 
     const selectedProvinceObj = provinces.find(p => p.uid === selectedProvince);
     const selectedWardObj = wards.find(w => w.uid === selectedWard);
+    const selectedStreetObj = streets.find(s => s.uid === selectedStreet);
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
@@ -77,18 +85,26 @@ export function ApartmentFilter({ onFilter }: ApartmentFilterProps) {
     useEffect(() => {
         if (!selectedProvince) {
             setWards([]);
+            setStreets([]);
             setValue('wardDivisionUid', '');
+            setValue('streetUid', '');
             return;
         }
 
         const fetchWards = async () => {
+            setLoadingWards(true);
             try {
                 const api = new AddressDivisionAPI();
                 const data = await api.listWards(selectedProvince);
                 setWards(data);
+                setValue('wardDivisionUid', '');
+                setValue('streetUid', '');
+                setStreets([]);
             } catch (error) {
                 console.error('Error fetching wards:', error);
                 toast.error('Không tải được danh sách phường/xã');
+            } finally {
+                setLoadingWards(false);
             }
         };
 
@@ -96,17 +112,42 @@ export function ApartmentFilter({ onFilter }: ApartmentFilterProps) {
     }, [selectedProvince, setValue]);
 
     useEffect(() => {
+        if (!selectedWard) {
+            setStreets([]);
+            setValue('streetUid', '');
+            return;
+        }
+
+        const fetchStreets = async () => {
+            setLoadingStreets(true);
+            try {
+                const api = new AddressDivisionAPI();
+                const data = await api.listStreets(selectedWard);
+                setStreets(data);
+                setValue('streetUid', '');
+            } catch (error) {
+                console.error('Error fetching streets:', error);
+                toast.error('Không tải được danh sách đường/phố');
+            } finally {
+                setLoadingStreets(false);
+            }
+        };
+
+        fetchStreets();
+    }, [selectedWard, setValue]);
+
+    useEffect(() => {
         setValue('minPrice', priceRange[0]);
         setValue('maxPrice', priceRange[1]);
     }, [priceRange, setValue]);
 
     const onSubmit = (data: any) => {
-
         onFilter({
             minPrice: data.minPrice,
             maxPrice: data.maxPrice,
             wardDivisionUid: data.wardDivisionUid || undefined,
             provinceDivisionUid: data.provinceDivisionUid || undefined,
+            streetUid: data.streetUid || undefined,
         });
     };
 
@@ -114,9 +155,12 @@ export function ApartmentFilter({ onFilter }: ApartmentFilterProps) {
         setPriceRange([0, 10000000]);
         setValue('provinceDivisionUid', '');
         setValue('wardDivisionUid', '');
+        setValue('streetUid', '');
         setWards([]);
+        setStreets([]);
         setOpenProvince(false);
         setOpenWard(false);
+        setOpenStreet(false);
     };
 
     return (
@@ -257,17 +301,20 @@ export function ApartmentFilter({ onFilter }: ApartmentFilterProps) {
                             <PopoverContent className="w-full p-0 shadow-lg border" align="start">
                                 <Command>
                                     <CommandInput
-                                        placeholder="Tìm kiếm phường/xã..."
-                                        className="h-11 border-b"
-                                        disabled={!selectedProvince}
-                                    />
-                                    <CommandList className="max-h-64">
+                                    placeholder="Tìm kiếm phường/xã..."
+                                    className="h-11 border-b"
+                                    disabled={!selectedProvince}
+                                />
+                                <CommandList className="max-h-64">
+                                    {!selectedProvince ? (
                                         <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
-                                            {!selectedProvince
-                                                ? "Vui lòng chọn tỉnh/thành phố trước"
-                                                : "Không tìm thấy phường/xã phù hợp."
-                                            }
+                                            Vui lòng chọn tỉnh/thành phố trước
                                         </CommandEmpty>
+                                    ) : wards.length === 0 ? (
+                                        <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+                                            {loadingWards ? 'Đang tải...' : 'Không tìm thấy phường/xã nào'}
+                                        </CommandEmpty>
+                                    ) : (
                                         <CommandGroup>
                                             {wards.map((ward) => (
                                                 <CommandItem
@@ -292,12 +339,89 @@ export function ApartmentFilter({ onFilter }: ApartmentFilterProps) {
                                                 </CommandItem>
                                             ))}
                                         </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
+                                    )}
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                </div>
 
+                {/* Street Combobox */}
+
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium">Đường/Phố</Label>
+                    <Popover open={openStreet} onOpenChange={setOpenStreet}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openStreet}
+                                className="w-full justify-between h-10 border-input hover:bg-accent/50 transition-colors"
+                                disabled={!selectedWard || loadingStreets}
+                            >
+                                {loadingStreets ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                        <span>Đang tải...</span>
+                                    </div>
+                                ) : (
+                                    <span className={cn(
+                                        "truncate",
+                                        selectedStreetObj ? "text-foreground" : "text-muted-foreground"
+                                    )}>
+                                        {selectedStreetObj ? selectedStreetObj.name : selectedWard ? "Chọn đường/phố..." : "Chọn phường/xã trước"}
+                                    </span>
+                                )}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0 shadow-lg border" align="start">
+                            <Command>
+                                <CommandInput
+                                    placeholder="Tìm kiếm đường/phố..."
+                                    className="h-11 border-b"
+                                    disabled={!selectedWard}
+                                />
+                                <CommandList className="max-h-64">
+                                    {!selectedWard ? (
+                                        <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+                                            Vui lòng chọn phường/xã trước
+                                        </CommandEmpty>
+                                    ) : streets.length === 0 ? (
+                                        <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+                                            {loadingStreets ? 'Đang tải...' : 'Không tìm thấy đường/phố nào'}
+                                        </CommandEmpty>
+                                    ) : (
+                                        <CommandGroup>
+                                            {streets.map((street) => (
+                                                <CommandItem
+                                                    key={street.uid}
+                                                    value={street.name}
+                                                    onSelect={() => {
+                                                        setValue('streetUid', street.uid, { shouldDirty: true, shouldTouch: true });
+                                                        setOpenStreet(false);
+                                                    }}
+                                                    className="py-2.5 px-3 text-sm cursor-pointer transition-colors hover:bg-accent"
+                                                >
+                                                    <div className="flex items-center gap-2 flex-1">
+                                                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="flex-1">{street.name}</span>
+                                                    </div>
+                                                    <Check
+                                                        className={cn(
+                                                            "h-4 w-4 flex-shrink-0",
+                                                            selectedStreet === street.uid ? "opacity-100 text-primary" : "opacity-0"
+                                                        )}
+                                                    />
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    )}
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                </div>
                 </div>
             </div>
 

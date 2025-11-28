@@ -31,6 +31,7 @@ export interface ApartmentRequest {
     ward: Division;
     provinceDivisionUid?: string;
     wardDivisionUid?: string;
+    streetUid?: string;
     addressDetail?: string;
     createdAt: string;
     updatedAt: string | null;

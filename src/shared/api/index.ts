@@ -5,13 +5,21 @@ export class AddressDivisionAPI extends AbstractRestApiClient {
     protected protectedResource = true
 
     private provinceBase = 'public/address/province'
-    private wardBase = 'public/address/ward'
+    private divisionBase = 'public/address/division'
 
     listProvinces(): Promise<AddressInterface[]> {
         return this.get<AddressInterface[]>(this.provinceBase)
     }
 
-    listWards(parentCode: string): Promise<AddressInterface[]> {
-        return this.get<AddressInterface[]>(this.wardBase, { parentCode })
+    listByParent(parentUid: string): Promise<AddressInterface[]> {
+        return this.get<AddressInterface[]>(this.divisionBase, { parentUid })
+    }
+
+    listWards(provinceUid: string): Promise<AddressInterface[]> {
+        return this.listByParent(provinceUid)
+    }
+
+    listStreets(wardUid: string): Promise<AddressInterface[]> {
+        return this.listByParent(wardUid)
     }
 }

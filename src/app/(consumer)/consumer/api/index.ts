@@ -14,6 +14,7 @@ export class PublicApartmentAPI extends AbstractRestApiClient {
         maxPrice?: number;
         wardDivisionUid?: string;
         provinceDivisionUid?: string;
+        streetUid?: string;
         provinceName?: string;
     }): Promise<ApartmentRequest[]> {
         const queryParams: Record<string, any> = {};
@@ -38,6 +39,10 @@ export class PublicApartmentAPI extends AbstractRestApiClient {
             queryParams.ProvinceName = filters.provinceName;
         }
 
+        if (filters?.streetUid) {
+            queryParams.StreetUid = filters.streetUid;
+        }
+
         return this.get<ApartmentRequest[]>(this.base, queryParams);
     }
 }
@@ -54,6 +59,7 @@ export class PublicApartmentRoomAPI extends AbstractRestApiClient {
         maxPrice?: number;
         wardDivisionUid?: string;
         provinceDivisionUid?: string;
+        streetUid?: string;
         provinceName?: string;
         apartmentUid?: string;
     }): Promise<ApartmentRoomRequest[]> {
@@ -81,6 +87,10 @@ export class PublicApartmentRoomAPI extends AbstractRestApiClient {
 
         if (filters?.apartmentUid) {
             queryParams.ApartmentUid = filters.apartmentUid;
+        }
+
+        if (filters?.streetUid) {
+            queryParams.StreetUid = filters.streetUid;
         }
 
         return this.get<ApartmentRoomRequest[]>(this.base, queryParams);

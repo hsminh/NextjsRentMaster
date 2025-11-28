@@ -16,7 +16,8 @@ export const apartmentFormSchema = z
         Files: z.array(z.string()).optional(),
         MetaData: z.string().min(1, 'Vui lòng nhập số nhà/địa chỉ'),
         provinceDivisionUid: z.string().min(1, 'Vui lòng chọn Tỉnh / Thành phố'),
-        wardDivisionUid: z.string().optional(),
+        wardDivisionUid: z.string().min(1, 'Vui lòng chọn Phường/Xã'),
+        streetUid: z.string().min(1, 'Vui lòng chọn Đường/Phố'),
     })
     .superRefine((data, ctx) => {
         // validate ảnh cho FullApartment
