@@ -48,11 +48,23 @@ export default function LandlordLogin() {
             const response = await api.login({
                 gmail: data.gmail,
                 password: data.password,
-            })
-            dispatch(setCredentials({ token: response.token, userType: 'landlord' }))
-            localStorage.setItem('access_token', response.token)
-            ctoast.success('Đăng nhập thành công')
-            router.push('/landlord/dashboard')
+            });
+            
+            // Save token to localStorage
+            localStorage.setItem('access_token', response.token);
+            
+            // Save user data to Redux
+            dispatch(setCredentials({
+                token: response.token,
+                userType: 'landlord',
+                userData: response.user
+            }));
+            
+            // Save user data to localStorage for persistence
+            localStorage.setItem('userData', JSON.stringify(response.user));
+            
+            ctoast.success('Đăng nhập thành công');
+            router.push('/landlord/dashboard');
         } catch {
             ctoast.error('Thông Tin Đăng Nhập Không Chính Xác')
         }
