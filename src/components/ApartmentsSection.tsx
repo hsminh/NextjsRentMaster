@@ -30,6 +30,7 @@ type SharedFilters = {
     maxPrice?: number;
     wardDivisionUid?: string;
     provinceDivisionUid?: string;
+    streetUid?: string;
     provinceName?: string;
 };
 

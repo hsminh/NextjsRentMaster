@@ -12,6 +12,7 @@ type SharedFilters = {
     maxPrice?: number;
     wardDivisionUid?: string;
     provinceDivisionUid?: string;
+    streetUid?: string;
     provinceName?: string;
 };
 
@@ -25,13 +26,10 @@ const ExploreSection = ({
                             initialRooms,
                         }: ExploreSectionProps) => {
     const [filters, setFilters] = useState<SharedFilters>({});
-    const [loadingFilter, setLoadingFilter] = useState(false);
-    const [collapsed, setCollapsed] = useState(false); // state để thu gọn filter
+    const [collapsed, setCollapsed] = useState(false);
 
     const handleFilter = async (f: SharedFilters) => {
-        setLoadingFilter(true);
         setFilters(f);
-        setLoadingFilter(false);
     };
 
     const handleClear = () => {
@@ -73,7 +71,6 @@ const ExploreSection = ({
                 {!collapsed && (
                     <ApartmentFilter
                         onFilter={handleFilter}
-                        loading={loadingFilter}
                     />
                 )}
             </div>
