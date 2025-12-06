@@ -23,3 +23,46 @@ export class AddressDivisionAPI extends AbstractRestApiClient {
         return this.listByParent(wardUid)
     }
 }
+
+
+export interface JoinApartmentRequest {
+    landlordUid: string
+    apartmentUid: string
+}
+
+export interface JoinApartmentResponse {
+    message: string
+    data: any
+}
+
+export class ConsumerContactAPI extends AbstractRestApiClient {
+    protected protectedResource = true
+    protected baseUrl = 'consumer/api/contact'
+
+    /**
+     * Join an apartment room
+     * POST /consumer/api/contact/join
+     */
+    async joinApartment(data: JoinApartmentRequest): Promise<JoinApartmentResponse> {
+        return this.post<JoinApartmentResponse>('join', undefined, data)
+    }
+
+    /**
+     * Get all contacts for current consumer
+     * GET /consumer/api/contact
+     */
+    async getContacts(): Promise<any[]> {
+        return this.get<any[]>('')
+    }
+
+    /**
+     * Get specific contact by ID
+     * GET /consumer/api/contact/{id}
+     */
+    async getContactById(id: string): Promise<any> {
+        return this.get<any>(`/${id}`)
+    }
+}
+
+// Export instance for easy use
+export const consumerContactAPI = new ConsumerContactAPI()

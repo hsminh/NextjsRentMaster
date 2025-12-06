@@ -5,6 +5,7 @@ export interface RoomMetadata {
 export interface ApartmentRoomRequest {
     uid?: string
     apartmentUid: string
+    landlordUid: string
     description: string
     price: number
     areaLength: number

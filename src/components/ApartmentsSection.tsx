@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from "next/link";
+import { toast } from 'sonner';
 
 import {
     Card,
@@ -14,6 +15,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from '@/components/ui/dialog';
+import {
     MapPin,
     Home,
     Building,
@@ -23,7 +32,8 @@ import {
 
 import { ApartmentRequest } from "@/app/landlord/apartments/type/apartment";
 import { useAppSelector } from "@/store";
-import { publicApartmentAPI } from '@/app/(consumer)/consumer/api';
+import { publicApartmentAPI, contactAPI } from '@/app/(consumer)/consumer/api';
+import ctoast from "@/components/ui/Toast";
 
 type SharedFilters = {
     minPrice?: number;
@@ -78,12 +88,40 @@ const ApartmentsSection = ({
                            }: ApartmentsSectionProps) => {
     const [apartments, setApartments] = useState<ApartmentRequest[]>(initialApartments);
     const [loading, setLoading] = useState(false);
+    const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+    const [selectedApartment, setSelectedApartment] = useState<ApartmentRequest | null>(null);
+    const [isJoining, setIsJoining] = useState(false);
 
     const { isLoggedIn, userType } = useAppSelector((state) => ({
         isLoggedIn: state.auth.isLoggedIn,
         userType: state.auth.userType
     }));
     const isConsumer = isLoggedIn && userType === 'consumer';
+
+    const handleJoinClick = (apartment: ApartmentRequest) => {
+        setSelectedApartment(apartment);
+        setJoinDialogOpen(true);
+    };
+
+    const handleConfirmJoin = async () => {
+        if (!selectedApartment) return;
+        
+        try {
+            setIsJoining(true);
+            await contactAPI.join({
+                LandlordUid: selectedApartment.landlordUid,
+                ApartmentUid: selectedApartment.uid!,
+                Type: selectedApartment.type
+            });
+            setJoinDialogOpen(false);
+            setSelectedApartment(null);
+            ctoast.success('Bạn Đã Gửi Lời Mời Tham Trọ Thành Công Hãy Đợi Chủ Trọ Chấp Nhận Lời Mời')
+        } catch (error) {
+            ctoast.error('Bạn Đã Gửi Lời Mời Tham Gia Trọ Rồi')
+        } finally {
+            setIsJoining(false);
+        }
+    };
 
     useEffect(() => {
         const hasFilters = Object.keys(sharedFilters).some(
@@ -222,7 +260,12 @@ const ApartmentsSection = ({
                                 </Button>
 
                                 {isConsumer ? (
-                                    <Button className="w-full group/btn" size="sm" variant="outline">
+                                    <Button 
+                                        className="w-full group/btn" 
+                                        size="sm" 
+                                        variant="outline"
+                                        onClick={() => handleJoinClick(apartment)}
+                                    >
                     <span className="group-hover/btn:translate-x-1 transition-transform">
                       Tham gia trọ
                     </span>
@@ -242,6 +285,31 @@ const ApartmentsSection = ({
                     ))}
                 </div>
             )}
+
+            <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Xác nhận tham gia trọ</DialogTitle>
+                        <DialogDescription>
+                            Bạn có chắc chắn muốn tham gia trọ này không?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setJoinDialogOpen(false)}
+                        >
+                            Hủy
+                        </Button>
+                        <Button 
+                            onClick={handleConfirmJoin}
+                            disabled={isJoining}
+                        >
+                            {isJoining ? 'Đang xử lý...' : 'Xác nhận'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

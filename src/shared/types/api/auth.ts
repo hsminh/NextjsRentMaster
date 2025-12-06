@@ -16,12 +16,14 @@ export interface AuthState {
   isLoggedIn: boolean;
   userType: 'admin' | 'landlord' | 'consumer' | null;
   userUid: string | null;
-  userData: {
+  isVerified: boolean;
+    userData: {
     uid: string;
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
+    isVerified: boolean;
     createdAt: string;
     updatedAt: string | null;
   } | null;

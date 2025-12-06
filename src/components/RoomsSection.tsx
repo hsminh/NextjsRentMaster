@@ -14,6 +14,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from '@/components/ui/dialog';
+import {
     MapPin,
     Home,
     Building,
@@ -21,9 +29,10 @@ import {
     Badge
 } from 'lucide-react';
 
-import { publicApartmentRoomAPI } from '@/app/(consumer)/consumer/api';
+import { publicApartmentRoomAPI, contactAPI } from '@/app/(consumer)/consumer/api';
 import { ApartmentRoomRequest } from "@/app/landlord/rooms/type/apartment";
 import { useAppSelector } from "@/store";
+import ctoast from "@/components/ui/Toast";
 
 type SharedFilters = {
     minPrice?: number;
@@ -83,6 +92,9 @@ const RoomsSection = ({
                       }: RoomsSectionProps) => {
     const [rooms, setRooms] = useState<ApartmentRoomRequest[]>(initialRooms);
     const [loading, setLoading] = useState(false);
+    const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState<ApartmentRoomRequest | null>(null);
+    const [isJoining, setIsJoining] = useState(false);
 
     const { isLoggedIn, userType } = useAppSelector((state) => ({
         isLoggedIn: state.auth.isLoggedIn,
@@ -90,6 +102,31 @@ const RoomsSection = ({
     }));
 
     const isConsumer = isLoggedIn && userType === 'consumer';
+
+    const handleJoinClick = (room: ApartmentRoomRequest) => {
+        setSelectedRoom(room);
+        setJoinDialogOpen(true);
+    };
+
+    const handleConfirmJoin = async () => {
+        if (!selectedRoom) return;
+        
+        try {
+            setIsJoining(true);
+            await contactAPI.join({
+                LandlordUid: selectedRoom.landlordUid,
+                ApartmentUid: selectedRoom.uid as string,
+                Type: 'Room'
+            });
+            setJoinDialogOpen(false);
+            setSelectedRoom(null);
+            ctoast.success('Bạn Đã Gửi Lời Mời Tham Trọ Thành Công Hãy Đợi Chủ Trọ Chấp Nhận Lời Mời')
+        } catch (error) {
+        } finally {
+            setIsJoining(false);
+            ctoast.error('Bạn Đã Gửi Lời Mời Tham Gia Trọ Rồi')
+        }
+    };
 
     useEffect(() => {
         const hasFilters = Object.keys(sharedFilters).some(
@@ -228,7 +265,12 @@ const RoomsSection = ({
                                 </Button>
 
                                 {isConsumer ? (
-                                    <Button className="w-full group/btn" size="sm" variant="outline">
+                                    <Button 
+                                        className="w-full group/btn" 
+                                        size="sm" 
+                                        variant="outline"
+                                        onClick={() => handleJoinClick(room)}
+                                    >
                     <span className="group-hover/btn:translate-x-1 transition-transform">
                       Tham gia trọ
                     </span>
@@ -248,6 +290,31 @@ const RoomsSection = ({
                     ))}
                 </div>
             )}
+
+            <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Xác nhận tham gia trọ</DialogTitle>
+                        <DialogDescription>
+                            Bạn có chắc chắn muốn tham gia phòng trọ này không?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setJoinDialogOpen(false)}
+                        >
+                            Hủy
+                        </Button>
+                        <Button 
+                            onClick={handleConfirmJoin}
+                            disabled={isJoining}
+                        >
+                            {isJoining ? 'Đang xử lý...' : 'Xác nhận'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

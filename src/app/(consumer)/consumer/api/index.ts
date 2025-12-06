@@ -97,5 +97,26 @@ export class PublicApartmentRoomAPI extends AbstractRestApiClient {
     }
 }
 
+export interface JoinApartmentPayload {
+    LandlordUid: string;
+    ApartmentUid: string;
+    Type: string;
+}
+
+export interface JoinResponse {
+    success: boolean;
+    message?: string;
+}
+
+export class ContactAPI extends AbstractRestApiClient {
+    protected protectedResource = true;
+    private base = 'consumer/api/contact';
+
+    join(payload: JoinApartmentPayload): Promise<JoinResponse> {
+        return this.post<JoinResponse>(`${this.base}/join`, undefined, payload);
+    }
+}
+
 export const publicApartmentAPI = new PublicApartmentAPI();
 export const publicApartmentRoomAPI = new PublicApartmentRoomAPI();
+export const contactAPI = new ContactAPI();
