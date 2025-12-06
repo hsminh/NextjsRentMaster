@@ -14,7 +14,6 @@ import {
     DollarSign,
     X,
     MessageSquare,
-    CheckCircle,
     AlertCircle,
     Check
 } from "lucide-react"

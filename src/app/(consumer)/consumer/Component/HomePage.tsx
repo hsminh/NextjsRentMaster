@@ -41,7 +41,8 @@ export default function ClientHomeWrapper({ initialApartments, initialRooms }: C
     }, [isLoggedIn, isVerified, userData, userType, router])
 
     if (isLoggedIn && userData && userType === 'consumer' && !isVerified) {
-        return <HomePageLoading />
+        router.push(`/profile`)
+        return
     }
 
     return (

@@ -13,17 +13,15 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useState, useEffect } from 'react'
-import { Loader2, Home } from 'lucide-react'
+import { useState  } from 'react'
+import { Loader2  } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import {RootState, useAppDispatch} from '@/store'
 import {ConsumerApi} from "@/app/(consumer)/consumer/api/consumer-api";
 import {setVerified, updateUserData} from "@/store/authSlice";
 import ctoast from "@/components/ui/Toast";
 import Link from "next/link";
-import CImageUploader from '@/components/ui/CImageUploader'
-import { isBlobUrl, revokePreviewUrl } from '@/app/utils/image-utils'
-import { createFormData } from '@/app/utils/form-utils'
+import AvatarUploader from '@/components/ui/AvatarUploader';
 
 const profileFormSchema = z.object({
     firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
@@ -32,7 +30,6 @@ const profileFormSchema = z.object({
     currentPassword: z.string().optional(),
     newPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }).optional(),
     confirmPassword: z.string().optional(),
-    avatar: z.any().optional(),
 })
     .refine((data) => !data.newPassword || data.currentPassword, {
         message: 'Current password is required to set a new password',
@@ -47,56 +44,68 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(false)
-    const [avatarPreview, setAvatarPreview] = useState<string[]>([])
+    const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null);
+
     const consumerApiClient = new ConsumerApi()
     const { userData, isVerified, userType } = useSelector((state: RootState) => state.auth)
     const dispatch = useAppDispatch()
 
-    useEffect(() => {
-        if (userData?.avatarUrl) {
-            setAvatarPreview([userData.avatarUrl])
-        }
-    }, [userData?.avatarUrl])
+    const initialAvatarUrl = userData?.avatarUrl;
+
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
             firstName: userData?.firstName || '',
             lastName: userData?.lastName || '',
             phoneNumber: userData?.phone || '',
-            avatar: userData?.avatarUrl ? [userData.avatarUrl] : [],
         },
     })
 
-    useEffect(() => {
-        return () => {
-            avatarPreview.forEach(url => {
-                if (isBlobUrl(url)) revokePreviewUrl(url)
-            })
-        }
-    }, [avatarPreview])
+    const handleAvatarFileChange = (file: File | null) => {
+        setNewAvatarFile(file);
+    };
 
     async function onSubmit(data: ProfileFormValues) {
         try {
             setIsLoading(true)
-            
-            const submitData = {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                phoneNumber: data.phoneNumber,
-                email: userData?.email,
-                Gmail: userData?.email,
+
+            const formData = new FormData();
+
+            formData.append('firstName', data.firstName);
+            formData.append('lastName', data.lastName);
+            formData.append('phoneNumber', data.phoneNumber);
+            formData.append('Gmail', userData?.email || '');
+
+            if (data.newPassword) {
+                formData.append('Password', data.newPassword);
             }
 
-            const formData = await createFormData(submitData, avatarPreview, 'avatar')
+            if (newAvatarFile) {
+                formData.append('Avatar', newAvatarFile, newAvatarFile.name);
+            }
+
             const response = await consumerApiClient.updateConsumer(userData?.uid as string, formData as any);
-            
+
+            const newAvatarUrl = response.avatar ||  initialAvatarUrl;
+
             dispatch(updateUserData({
                 firstName: data.firstName,
                 lastName: data.lastName,
                 phoneNumber: data.phoneNumber,
-                avatarUrl: response.avatar
-            }))
-            
+                avatarUrl: newAvatarUrl,
+            }));
+
+            // 5. Xử lý xác minh
+            if (!userData?.isVerified) {
+                const verificationResult = await consumerApiClient.checkVerified(userData?.uid as string);
+
+                const isNowVerified = verificationResult?.is_verified || false;
+
+                if (isNowVerified) {
+                    dispatch(setVerified(true));
+                }
+            }
+
             ctoast.success('Cập nhật thông tin thành công')
         } catch (error) {
             console.error('Error updating profile:', error)
@@ -114,25 +123,13 @@ export default function ProfilePage() {
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <FormField
-                        control={form.control}
-                        name="avatar"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Profile Picture</FormLabel>
-                                <FormControl>
-                                    <CImageUploader
-                                        defaultFiles={avatarPreview}
-                                        onChange={(files, newPreviews, allPreviews) => {
-                                            setAvatarPreview(allPreviews)
-                                            field.onChange(files)
-                                        }}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+
+                    <div className="flex justify-center pb-6">
+                        <AvatarUploader
+                            defaultUrl={initialAvatarUrl}
+                            onFileChange={handleAvatarFileChange}
+                        />
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
