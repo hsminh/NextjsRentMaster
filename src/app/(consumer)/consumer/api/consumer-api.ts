@@ -11,6 +11,16 @@ export interface ConsumerData {
   password: string;
   Gmail: string;
 }
+
+export interface ConsumerResponse {
+  uid: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  avatar?: string;
+}
+
 export class ConsumerApi extends AbstractRestApiClient {
     protected protectedResource = true
     private ConsumerBase = 'consumer/api/'
@@ -19,7 +29,12 @@ export class ConsumerApi extends AbstractRestApiClient {
         return this.post<VerificationResponse>(`${this.ConsumerBase}${uid}/check-verified`)
     }
 
-    async updateConsumer(uid: string, data: ConsumerData): Promise<void> {
-        return this.put<void>(`${this.ConsumerBase}${uid}`, undefined, data)
+    async updateConsumer(uid: string, data: ConsumerData | FormData): Promise<ConsumerResponse> {
+        return this.put<ConsumerResponse>(
+            `${this.ConsumerBase}${uid}`,
+            undefined,
+            data,
+            { 'Content-Type': 'multipart/form-data' }
+        )
     }
 }

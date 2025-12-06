@@ -24,7 +24,7 @@ import { ref, onValue, off, update, onChildAdded } from 'firebase/database';
 import database from '@/lib/firebase';
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
-import { initializeAuth } from "@/store/authSlice";
+
 import Link from "next/link";
 import {NotificationAPI} from "@/app/landlord/api";
 
@@ -66,9 +66,6 @@ export default function LandlordLayout({
     const dispatch = useDispatch()
     const userUid = useSelector((state: RootState) => state.auth.userUid)
 
-    useEffect(() => {
-        dispatch(initializeAuth() as any)
-    }, [dispatch])
 
     // Calculate unread count
     const unreadCount = notifications.filter(n => !n.isRead).length;

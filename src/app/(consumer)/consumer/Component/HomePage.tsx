@@ -32,20 +32,15 @@ interface ClientHomeWrapperProps {
     initialRooms: ApartmentRoomRequest[];
 }
 
+
 export default function ClientHomeWrapper({ initialApartments, initialRooms }: ClientHomeWrapperProps) {
     const router = useRouter()
-    const { isLoggedIn, isVerified, userData } = useSelector((state: RootState) => state.auth)
+    const { isLoggedIn, isVerified, userData, userType } = useSelector((state: RootState) => state.auth)
 
     useEffect(() => {
-        if (isLoggedIn && userData && !isVerified) {
-            router.push(`/profile`)
-            return
-        }
+    }, [isLoggedIn, isVerified, userData, userType, router])
 
-
-    }, [isLoggedIn, isVerified, userData, router])
-
-    if (isLoggedIn && userData && !isVerified) {
+    if (isLoggedIn && userData && userType === 'consumer' && !isVerified) {
         return <HomePageLoading />
     }
 

@@ -13,13 +13,17 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Loader2, Home } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import {RootState, useAppDispatch} from '@/store'
 import {ConsumerApi} from "@/app/(consumer)/consumer/api/consumer-api";
 import {setVerified, updateUserData} from "@/store/authSlice";
 import ctoast from "@/components/ui/Toast";
+import Link from "next/link";
+import CImageUploader from '@/components/ui/CImageUploader'
+import { isBlobUrl, revokePreviewUrl } from '@/app/utils/image-utils'
+import { createFormData } from '@/app/utils/form-utils'
 
 const profileFormSchema = z.object({
     firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
@@ -28,6 +32,7 @@ const profileFormSchema = z.object({
     currentPassword: z.string().optional(),
     newPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }).optional(),
     confirmPassword: z.string().optional(),
+    avatar: z.any().optional(),
 })
     .refine((data) => !data.newPassword || data.currentPassword, {
         message: 'Current password is required to set a new password',
@@ -42,48 +47,60 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(false)
-    const consumerApiClient =new ConsumerApi()
-    const { userData } = useSelector((state: RootState) => state.auth)
+    const [avatarPreview, setAvatarPreview] = useState<string[]>([])
+    const consumerApiClient = new ConsumerApi()
+    const { userData, isVerified, userType } = useSelector((state: RootState) => state.auth)
     const dispatch = useAppDispatch()
+
+    useEffect(() => {
+        if (userData?.avatarUrl) {
+            setAvatarPreview([userData.avatarUrl])
+        }
+    }, [userData?.avatarUrl])
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
             firstName: userData?.firstName || '',
             lastName: userData?.lastName || '',
             phoneNumber: userData?.phone || '',
+            avatar: userData?.avatarUrl ? [userData.avatarUrl] : [],
         },
     })
+
+    useEffect(() => {
+        return () => {
+            avatarPreview.forEach(url => {
+                if (isBlobUrl(url)) revokePreviewUrl(url)
+            })
+        }
+    }, [avatarPreview])
 
     async function onSubmit(data: ProfileFormValues) {
         try {
             setIsLoading(true)
-
-            const updateData: any = {
+            
+            const submitData = {
                 firstName: data.firstName,
                 lastName: data.lastName,
                 phoneNumber: data.phoneNumber,
-                password: data.newPassword,
+                email: userData?.email,
                 Gmail: userData?.email,
             }
-            await consumerApiClient.updateConsumer(userData?.uid as string, updateData);
+
+            const formData = await createFormData(submitData, avatarPreview, 'avatar')
+            const response = await consumerApiClient.updateConsumer(userData?.uid as string, formData as any);
+            
             dispatch(updateUserData({
                 firstName: data.firstName,
                 lastName: data.lastName,
                 phoneNumber: data.phoneNumber,
-            }));
-
-            if (!userData?.isVerified) {
-                const verificationResult = await consumerApiClient.checkVerified(userData?.uid as string);
-
-                const isNowVerified = verificationResult?.is_verified || false;
-
-                if (isNowVerified) {
-                    dispatch(setVerified(true));
-                }
-            }
-            ctoast.success('Hồ sơ đã được cập nhật thành công')
-        } catch (error: any) {
-            ctoast.error('Cập nhật hồ sơ thất bại')
+                avatarUrl: response.avatar
+            }))
+            
+            ctoast.success('Cập nhật thông tin thành công')
+        } catch (error) {
+            console.error('Error updating profile:', error)
+            ctoast.error('Có lỗi xảy ra khi cập nhật thông tin')
         } finally {
             setIsLoading(false)
         }
@@ -95,9 +112,28 @@ export default function ProfilePage() {
                 <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
                 <p className="text-muted-foreground">Update your account settings and password here.</p>
             </div>
-
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <FormField
+                        control={form.control}
+                        name="avatar"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Profile Picture</FormLabel>
+                                <FormControl>
+                                    <CImageUploader
+                                        defaultFiles={avatarPreview}
+                                        onChange={(files, newPreviews, allPreviews) => {
+                                            setAvatarPreview(allPreviews)
+                                            field.onChange(files)
+                                        }}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <FormField
@@ -195,10 +231,19 @@ export default function ProfilePage() {
                         />
                     </div>
 
-                    <Button type="submit" disabled={isLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Update Profile
-                    </Button>
+                    <div className="flex gap-4">
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Update Profile
+                        </Button>
+                        {isVerified && userType === 'consumer' && (
+                            <Button asChild variant="outline">
+                                <Link href="/" className="flex items-center gap-2">
+                                    Back to Home
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
                 </form>
             </Form>
         </div>

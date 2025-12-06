@@ -8,6 +8,8 @@ export interface AuthResponse {
     phoneNumber: string;
     createdAt: string;
     updatedAt: string | null;
+    avatar?: string;
+    isVerified?: boolean;
   };
 }
 

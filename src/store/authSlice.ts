@@ -3,7 +3,24 @@ import { AuthState } from '@/shared/types/api/auth'
 
 export type UserType = 'admin' | 'landlord' | 'consumer' | null
 
-const initialState: AuthState & { isAuthInitialized: boolean } = {
+interface UserData {
+  uid: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  isVerified: boolean
+  createdAt: string
+  updatedAt: string | null
+  avatarUrl?: string
+}
+
+interface ExtendedAuthState extends AuthState {
+  isAuthInitialized: boolean
+  userData: UserData | null
+}
+
+const initialState: ExtendedAuthState = {
     token: null,
     isLoggedIn: false,
     isVerified: false,
@@ -36,6 +53,7 @@ const authSlice = createSlice({
                     createdAt?: string
                     updatedAt?: string | null
                     isVerified?: boolean
+                    avatar?: string
                 }
             }>
         ) => {
@@ -54,7 +72,8 @@ const authSlice = createSlice({
                     phone: userData.phoneNumber || userData.phone || '',
                     createdAt: userData.createdAt || new Date().toISOString(),
                     updatedAt: userData.updatedAt || null,
-                    isVerified: userData.isVerified || false
+                    isVerified: userData.isVerified || false,
+                    avatarUrl: userData.avatar || undefined
                 }
                 state.isVerified = userData.isVerified || false
 
@@ -71,14 +90,16 @@ const authSlice = createSlice({
                 firstName?: string
                 lastName?: string
                 phoneNumber?: string
+                avatarUrl?: string
             }>
         ) => {
             if (state.userData) {
                 state.userData = {
                     ...state.userData,
-                    ...(action.payload.firstName && { firstName: action.payload.firstName }),
-                    ...(action.payload.lastName && { lastName: action.payload.lastName }),
-                    ...(action.payload.phoneNumber && { phone: action.payload.phoneNumber }),
+                    firstName: action.payload.firstName ?? state.userData.firstName,
+                    lastName: action.payload.lastName ?? state.userData.lastName,
+                    phone: action.payload.phoneNumber ?? state.userData.phone,
+                    avatarUrl: action.payload.avatarUrl ?? state.userData.avatarUrl,
                 }
             }
         },
@@ -89,7 +110,7 @@ const authSlice = createSlice({
             state.userType = null
             state.userUid = null
             state.userData = null
-            state.isAuthInitialized = true // Vẫn đặt là true sau logout
+            state.isAuthInitialized = true
 
             // Xóa localStorage khi logout
             localStorage.removeItem('access_token')
