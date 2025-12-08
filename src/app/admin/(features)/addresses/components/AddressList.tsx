@@ -34,14 +34,10 @@ export default function AddressList() {
 
     // Load streets khi chọn phường
     useEffect(() => {
-        if (!selectedWard) {
-            setStreets([])
-            return
-        }
-        addressApi.getChildren(selectedWard, 'street') // 'street' để lọc đường
+        addressApi.getStreets()
             .then(setStreets)
             .catch(console.error)
-    }, [selectedWard])
+    }, [])
 
     return (
         <div className="p-4">

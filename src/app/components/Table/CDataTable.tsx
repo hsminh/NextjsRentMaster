@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import React, {useState, useMemo, useCallback} from 'react'
+import {motion, AnimatePresence} from 'framer-motion'
+import {Input} from '@/components/ui/input'
+import {Button} from '@/components/ui/button'
 import {
     Table,
     TableBody,
@@ -47,6 +47,8 @@ import {
     Home,
 } from 'lucide-react'
 import Link from 'next/link'
+import string from "zod/src/v3/benchmarks/string";
+import {T} from "tailwindcss/dist/types-WlZgYgM8";
 
 export interface ColumnConfig<T> {
     key: keyof T
@@ -60,17 +62,18 @@ interface BreadcrumbItem {
 }
 
 interface DataTableProps<T> {
-    createPath?: string
-    data: T[]
-    columns: ColumnConfig<T>[]
-    searchPlaceholder?: string
-    searchKeys?: (keyof T)[]
-    statusKey?: keyof T
-    statusOptions?: { value: string; label: string }[]
-    pageSizeOptions?: number[]
-    loading?: boolean
-    error?: string | null
-    breadcrumbItems?: BreadcrumbItem[]
+    createPath?: string,
+    data: T[],
+    columns: ColumnConfig<T>[],
+    searchPlaceholder?: string,
+    searchKeys?: (keyof T)[],
+    statusKey?: keyof T,
+    statusOptions?: { value: string; label: string }[],
+    pageSizeOptions?: number[],
+    loading?: boolean,
+    error?: string | null,
+    breadcrumbItems?: BreadcrumbItem[],
+    rightSlot?: React.ReactNode
 }
 
 export function CDataTable<T extends Record<string, any>>({
@@ -81,14 +84,15 @@ export function CDataTable<T extends Record<string, any>>({
                                                               searchKeys = [],
                                                               statusKey,
                                                               statusOptions = [
-                                                                  { value: 'all', label: 'Tất cả' },
-                                                                  { value: 'active', label: 'Hoạt động' },
-                                                                  { value: 'inactive', label: 'Không hoạt động' },
+                                                                  {value: 'all', label: 'Tất cả'},
+                                                                  {value: 'active', label: 'Hoạt động'},
+                                                                  {value: 'inactive', label: 'Không hoạt động'},
                                                               ],
                                                               pageSizeOptions = [10, 20, 30, 40, 50],
                                                               loading = false,
                                                               error = null,
                                                               breadcrumbItems = [],
+                                                              rightSlot
                                                           }: DataTableProps<T>) {
     // State
     const [search, setSearch] = useState('')
@@ -139,7 +143,7 @@ export function CDataTable<T extends Record<string, any>>({
     }, [])
 
     const toggleColumn = useCallback((key: keyof T) => {
-        setVisibleColumns((prev) => ({ ...prev, [key]: !prev[key as string] }))
+        setVisibleColumns((prev) => ({...prev, [key]: !prev[key as string]}))
     }, [])
 
     // Breadcrumb Component
@@ -151,11 +155,11 @@ export function CDataTable<T extends Record<string, any>>({
                 <BreadcrumbList>
                     <BreadcrumbItem>
                         <BreadcrumbLink href="/" className="flex items-center gap-1">
-                            <Home size={16} />
+                            <Home size={16}/>
                             Trang chủ
                         </BreadcrumbLink>
                     </BreadcrumbItem>
-                    <BreadcrumbSeparator />
+                    <BreadcrumbSeparator/>
                     {breadcrumbItems.map((item, index) => {
                         const isLast = index === breadcrumbItems.length - 1
 
@@ -177,7 +181,7 @@ export function CDataTable<T extends Record<string, any>>({
                                         <span className="text-gray-600">{item.label}</span>
                                     )}
                                 </BreadcrumbItem>
-                                {!isLast && <BreadcrumbSeparator />}
+                                {!isLast && <BreadcrumbSeparator/>}
                             </React.Fragment>
                         )
                     })}
@@ -201,7 +205,7 @@ export function CDataTable<T extends Record<string, any>>({
                     }`}
                 >
                     <div className="flex items-center">
-                        <LayoutGrid size={16} className="mr-1 text-green-600" />
+                        <LayoutGrid size={16} className="mr-1 text-green-600"/>
                         <SelectValue>{currentStatusLabel}</SelectValue>
                     </div>
                 </SelectTrigger>
@@ -220,7 +224,7 @@ export function CDataTable<T extends Record<string, any>>({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"/>
                     <Input
                         placeholder={searchPlaceholder}
                         value={search}
@@ -228,10 +232,15 @@ export function CDataTable<T extends Record<string, any>>({
                         className="w-[240px] h-8 pl-10 bg-white border-gray-300"
                     />
                 </div>
+                {rightSlot && (
+                    <div className="ml-2">
+                        {rightSlot}
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-                {statusKey && <StatusFilterButton />}
+                {statusKey && <StatusFilterButton/>}
                 {createPath && (
                     <Button
                         asChild
@@ -239,11 +248,12 @@ export function CDataTable<T extends Record<string, any>>({
                         className="h-9 px-5 shadow-md"
                     >
                         <Link href={createPath} className="flex items-center gap-1">
-                            <PlusCircle size={16} />
+                            <PlusCircle size={16}/>
                             Tạo mới
                         </Link>
                     </Button>
                 )}
+             
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -252,12 +262,12 @@ export function CDataTable<T extends Record<string, any>>({
                             size="sm"
                             className="flex items-center gap-2 text-gray-700 border-gray-300"
                         >
-                            <Settings2 size={14} />
+                            <Settings2 size={14}/>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px]">
                         <DropdownMenuLabel>Cột hiển thị</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSeparator/>
                         {columns
                             .filter((col) => col.key !== 'uid')
                             .map((col) => (
@@ -281,7 +291,7 @@ export function CDataTable<T extends Record<string, any>>({
                 <span className="font-semibold">Số hàng mỗi trang</span>
                 <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
                     <SelectTrigger className="w-[80px]">
-                        <SelectValue placeholder={String(pageSize)} />
+                        <SelectValue placeholder={String(pageSize)}/>
                     </SelectTrigger>
                     <SelectContent>
                         {pageSizeOptions.map((size) => (
@@ -305,7 +315,7 @@ export function CDataTable<T extends Record<string, any>>({
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                 >
-                    <ChevronsLeft className="h-4 w-4" />
+                    <ChevronsLeft className="h-4 w-4"/>
                 </Button>
                 <Button
                     variant="outline"
@@ -313,7 +323,7 @@ export function CDataTable<T extends Record<string, any>>({
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                 >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-4 w-4"/>
                 </Button>
                 <Button
                     variant="outline"
@@ -321,7 +331,7 @@ export function CDataTable<T extends Record<string, any>>({
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages || totalPages === 0}
                 >
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4"/>
                 </Button>
                 <Button
                     variant="outline"
@@ -329,7 +339,7 @@ export function CDataTable<T extends Record<string, any>>({
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages || totalPages === 0}
                 >
-                    <ChevronsRight className="h-4 w-4" />
+                    <ChevronsRight className="h-4 w-4"/>
                 </Button>
             </div>
         </div>
@@ -349,9 +359,9 @@ export function CDataTable<T extends Record<string, any>>({
                 <div className="text-center text-red-500 py-10">{error}</div>
             ) : (
                 <div className="space-y-4">
-                    <BreadcrumbNavigation />
+                    <BreadcrumbNavigation/>
 
-                    <HeaderActions />
+                    <HeaderActions/>
 
                     <div className="bg-white border rounded-sm overflow-hidden shadow-sm">
                         <Table>
@@ -371,7 +381,7 @@ export function CDataTable<T extends Record<string, any>>({
                                                     </TableHead>
                                                 )
                                         )}
-                                    <TableHead className="bg-gray-100 w-[80px]" />
+                                    <TableHead className="bg-gray-100 w-[80px]"/>
                                 </TableRow>
                             </TableHeader>
 
@@ -381,10 +391,10 @@ export function CDataTable<T extends Record<string, any>>({
                                         paginatedData.map((item, index) => (
                                             <motion.tr
                                                 key={index}
-                                                initial={{ opacity: 0, y: 5 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -5 }}
-                                                transition={{ duration: 0.2 }}
+                                                initial={{opacity: 0, y: 5}}
+                                                animate={{opacity: 1, y: 0}}
+                                                exit={{opacity: 0, y: -5}}
+                                                transition={{duration: 0.2}}
                                                 className="hover:bg-gray-50 border-b transition-colors duration-150"
                                             >
                                                 {columns
@@ -424,7 +434,7 @@ export function CDataTable<T extends Record<string, any>>({
                         </Table>
                     </div>
 
-                    {totalItems > 0 && <PaginationFooter />}
+                    {totalItems > 0 && <PaginationFooter/>}
                 </div>
             )}
         </div>
