@@ -7,7 +7,7 @@ import { ApartmentRequest } from "@/app/landlord/apartments/type/apartment";
 import { BreadcrumbNavigationProps } from "@/app/components/layout/BreadcrumbNavigation";
 
 export const createApartmentPath = '/landlord/apartments/create'
-export const apartmentSearchKeys: (keyof ApartmentRequest)[] = ['areaLength']
+export const apartmentSearchKeys: (keyof ApartmentRequest)[] = []
 
 export const apartmentBreadcrumbBase = {
     homeHref: "/landlord/apartments",

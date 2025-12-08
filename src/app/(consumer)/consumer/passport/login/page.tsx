@@ -49,7 +49,11 @@ export default function HomeLogin() {
                 gmail: data.gmail,
                 password: data.password,
             })
-            dispatch(setCredentials({ token: response.token, userType: 'consumer' }))
+            dispatch(setCredentials({
+                token: response.token,
+                userType: 'consumer',
+                userData: response.user
+            }));
             localStorage.setItem('access_token', response.token)
             ctoast.success('Đăng nhập thành công')
             router.push('/')
@@ -110,8 +114,7 @@ export default function HomeLogin() {
                             />
 
                             <div className="flex items-center justify-end">
-                                <Link
-                                    href="#"
+                                <Link href="#"
                                     className="text-sm font-medium text-primary hover:underline"
                                 >
                                     Quên mật khẩu?

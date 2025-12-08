@@ -1,5 +1,16 @@
 export interface AuthResponse {
-  token: string
+  token: string;
+  user: {
+    uid: string;
+    firstName: string;
+    lastName: string;
+    gmail: string;
+    phoneNumber: string;
+    createdAt: string;
+    updatedAt: string | null;
+    avatar?: string;
+    isVerified?: boolean;
+  };
 }
 
 export interface ErrorResponse {
