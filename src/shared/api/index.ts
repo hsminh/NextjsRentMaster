@@ -1,9 +1,10 @@
 import AbstractRestApiClient from '@/app/utils/api/base-api-client'
 import { AddressInterface } from '@/shared/types/response/address'
+import type {AddressDivision} from "@/app/admin/(features)/addresses/types";
 
 export class AddressDivisionAPI extends AbstractRestApiClient {
     protected protectedResource = true
-
+    private publicBase = 'public/address'
     private provinceBase = 'public/address/province'
     private divisionBase = 'public/address/division'
 
@@ -21,6 +22,9 @@ export class AddressDivisionAPI extends AbstractRestApiClient {
 
     listStreets(wardUid: string): Promise<AddressInterface[]> {
         return this.listByParent(wardUid)
+    }
+    getStreets(): Promise<AddressDivision[]> {
+        return this.get<AddressDivision[]>(`${this.publicBase}/street`)
     }
 }
 
