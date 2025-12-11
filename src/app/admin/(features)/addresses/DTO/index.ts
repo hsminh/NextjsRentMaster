@@ -8,3 +8,6 @@ export interface CreateAddressDto {
     parentId?: string | null;
     code?: string | null;
 }
+export interface UpdateAddressDto {
+    name: string;
+}
