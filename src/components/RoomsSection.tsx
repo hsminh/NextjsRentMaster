@@ -84,7 +84,16 @@ const formatPrice = (price: number) => {
 };
 
 const getFullAddress = (item: ApartmentRoomRequest) => {
-    return item.addressDetail || 'Đang cập nhật';
+    if (item.addressDetail) {
+        return item.addressDetail;
+    }
+    
+    const parts = [];
+    if (item.street?.name) parts.push(item.street.name);
+    if (item.ward?.name) parts.push(item.ward.name);
+    if (item.province?.name) parts.push(item.province.name);
+    
+    return parts.length > 0 ? parts.join(', ') : 'Đang cập nhật';
 };
 
 const RoomsSection = ({

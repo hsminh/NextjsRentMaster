@@ -1,3 +1,18 @@
+export interface Division {
+    name: string;
+    code: string;
+    type: string;
+    parentId: string;
+    isDeprecated: boolean;
+    deprecatedAt: string | null;
+    previousUnitCodes: string[];
+    uid: string;
+    createdAt: string;
+    updatedAt: string | null;
+    deletedAt: string | null;
+    isDelete: boolean;
+}
+
 export interface RoomMetadata {
     [key: string]: string | undefined
 }
@@ -17,4 +32,7 @@ export interface ApartmentRoomRequest {
     wardDivisionUid?: string
     addressDetail?: string
     metaData?: RoomMetadata
+    province?: Division | null
+    ward?: Division | null
+    street?: Division | null
 }

@@ -79,8 +79,6 @@ export default function ChatbotWidget() {
 
         const unsubscribe = onChildAdded(chatRef, (snapshot) => {
             const msg = snapshot.val();
-            console.log('🔥 New Firebase message received:', msg);
-
             if (!msg?.content) {
                 console.warn('Message missing content:', msg);
                 return;
@@ -97,7 +95,6 @@ export default function ChatbotWidget() {
                 );
 
                 if (!isDuplicate) {
-                    console.log('✅ Adding new message:', { text: msg.content, sender });
                     return [...prev, { text: msg.content, sender }];
                 }
                 return prev;

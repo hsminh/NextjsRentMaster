@@ -29,6 +29,7 @@ export interface ApartmentRequest {
     images: string[];
     province: Division;
     ward: Division;
+    street?: Division;
     provinceDivisionUid?: string;
     wardDivisionUid?: string;
     streetUid?: string;

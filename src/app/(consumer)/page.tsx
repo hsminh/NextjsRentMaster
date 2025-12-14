@@ -6,12 +6,23 @@ async function getApartmentData() {
         publicApartmentAPI.list(),
         publicApartmentRoomAPI.list()
     ]);
-    return { apartmentsData, roomsData };
-}
 
+    const apartmentMap = new Map(apartmentsData.map(apt => [apt.uid, apt]));
+
+    const enrichedRooms = roomsData.map(room => {
+        const apartment = apartmentMap.get(room.apartmentUid);
+        return {
+            ...room,
+            province: apartment?.province || null,
+            ward: apartment?.ward || null,
+            street: apartment?.street || null
+        };
+    });
+    return { apartmentsData, roomsData: enrichedRooms };
+}
 export default async function HomePage() {
     const { apartmentsData, roomsData } = await getApartmentData();
-
+    console.log(roomsData)
     return (
         <ClientHomeWrapper
             initialApartments={apartmentsData}
