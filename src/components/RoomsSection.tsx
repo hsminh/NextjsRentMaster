@@ -137,7 +137,7 @@ const RoomsSection = ({
             await contactAPI.join({
                 LandlordUid: selectedRoom.landlordUid,
                 ApartmentUid: selectedRoom.uid as string,
-                Type: 'Room'
+                Type: 'RoomBased'
             });
             setJoinDialogOpen(false);
             setSelectedRoom(null);

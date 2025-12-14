@@ -10,6 +10,7 @@ import {
     Settings,
     Bell,
     Search,
+    MapPin,
 } from "lucide-react"
 import AdminGuard from "@/app/admin/middleWare/admin-guard"
 import LeftBar from "@/app/components/layout/LeftBar";
@@ -28,6 +29,7 @@ export default function AdminLayout({
         { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
         { icon: Gift, label: "Rewards", path: "/admin/reward" },
         { icon: Users, label: "Users", path: "/admin/users" },
+        { icon: MapPin, label: "Addresses", path: "/admin/addresses" },
         { icon: Settings, label: "Cài đặt", path: "/admin/settings" },
     ]
 
@@ -90,6 +92,7 @@ export default function AdminLayout({
                             { icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
                             { icon: Gift, label: "Rewards", path: "/admin/reward" },
                             { icon: Users, label: "Users", path: "/admin/users" },
+                            { icon: MapPin, label: "Addresses", path: "/admin/addresses" },
                             { icon: Settings, label: "Cài đặt", path: "/admin/settings" },
                         ]}
                         title="Admin Panel"

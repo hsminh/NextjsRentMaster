@@ -34,6 +34,7 @@ export interface RealEstateUnit {
   province: string | null;
   ward: string | null;
   street: string | null;
+  roomNumber?: string;
   uid: string;
   createdAt: string;
   updatedAt: string | null;

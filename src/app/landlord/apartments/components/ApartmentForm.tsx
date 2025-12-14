@@ -149,7 +149,7 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
             setLoadingStreets(true)
             try {
                 const api = new AddressDivisionAPI()
-                const data = await api.listStreets(selectedWard)
+                const data = await api.getStreets(selectedWard)
                 setStreets(data)
                 // Reset street khi ward thay đổi
                 form.setValue('streetUid','')

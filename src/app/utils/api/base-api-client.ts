@@ -28,7 +28,7 @@ export default class AbstractRestApiClient {
         const url = this.buildRequestURL(path, query)
 
         // ⚙️ Ưu tiên headers được truyền vào (từ API con)
-        const mergedHeaders = { ...this.defaultHeaders, ...headers }
+        const mergedHeaders = {...this.defaultHeaders, ...headers}
 
         const config: RequestInit = {
             method,
@@ -63,7 +63,7 @@ export default class AbstractRestApiClient {
         }
     }
 
-    protected buildRequestURL(path: string, query?: UrlQueryType): string {
+        protected buildRequestURL(path: string, query?: UrlQueryType): string {
         const queryString = query
             ? Object.entries(query)
                 .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
@@ -85,6 +85,9 @@ export default class AbstractRestApiClient {
         return this.request('PUT', path, query, body, headers)
     }
 
+
+
+
     public patch<T>(path: string, query?: UrlQueryType, body?: any, headers?: HeadersInit): Promise<T> {
         return this.request('PATCH', path, query, body, headers)
     }
@@ -92,4 +95,16 @@ export default class AbstractRestApiClient {
     public delete(path: string, query?: UrlQueryType, headers?: HeadersInit): Promise<void> {
         return this.request('DELETE', path, query, undefined, headers)
     }
+
+// base-api-client.ts
+    postForm<T>(path: string, formData: FormData): Promise<T> {
+        return this.request<T>(
+            "POST",      // method
+            path,        // path
+            undefined,   // query
+            formData,    // body
+            {}           // headers (để trống cho multipart tự handle)
+        );
+    }
+
 }
