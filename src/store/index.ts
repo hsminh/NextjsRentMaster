@@ -3,16 +3,18 @@ import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, 
 import storage from 'redux-persist/lib/storage'
 import { combineReducers } from 'redux'
 import authReducer from './authSlice'
+import favoriteReducer from './favoriteSlice'
 
 const persistConfig = {
   key: 'root',  
   version: 1,
   storage,
-  whitelist: ['auth']
+  whitelist: ['auth', 'favorite']
 }
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  favorite: favoriteReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

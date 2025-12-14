@@ -13,7 +13,7 @@ export default function HeroSection() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-32 relative">
                 <div className="text-center space-y-8 max-w-4xl mx-auto">
                     <div className="space-y-4">
-                        <Badge variant="secondary" className="px-4 py-2 text-sm font-semibold">
+                        <Badge  className="px-4 py-2 text-sm font-semibold">
                             🎯 Nền tảng tìm nhà số 1 Việt Nam
                         </Badge>
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight font-hb75 drop-shadow-lg">

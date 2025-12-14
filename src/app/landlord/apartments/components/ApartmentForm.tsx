@@ -35,7 +35,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import {ApartmentStatus, ApartmentType} from "@/app/landlord/apartments/type/apartment-enums";
+import {ApartmentType} from "@/app/landlord/apartments/type/apartment-enums";
 import {ApartmentAPI} from "@/app/landlord/apartments/api";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {ApartmentRequest} from "@/app/landlord/apartments/type/apartment";
@@ -72,7 +72,6 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
             areaLength: initialData?.areaLength ?? 0,
             areaWidth: initialData?.areaWidth ?? 0,
             type: initialData?.type ?? ApartmentType.FULL_APARTMENT,
-            status: initialData?.status ?? ApartmentStatus.AVAILABLE,
             Files: initialData?.images ?? [],
             provinceDivisionUid: initialData?.provinceDivisionUid ?? undefined,
             wardDivisionUid: initialData?.wardDivisionUid ?? undefined,

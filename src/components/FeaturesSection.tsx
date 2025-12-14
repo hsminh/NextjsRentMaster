@@ -13,7 +13,7 @@ export default function HeroSection() {
         <section className="bg-gradient-to-br from-muted/50 to-background py-20 border-y">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center space-y-4 mb-16">
-                    <Badge variant="outline" className="px-4 py-2 text-base">
+                    <Badge  className="px-4 py-2 text-base">
                         ✨ Tại sao chọn chúng tôi?
                     </Badge>
                     <h2 className="text-4xl font-bold tracking-tight">Trải nghiệm khác biệt</h2>

@@ -10,9 +10,6 @@ export const apartmentFormSchema = z
         type: z.enum(['FullApartment', 'RoomBased']).refine((val) => !!val, {
             message: 'Vui lòng chọn loại phòng',
         }),
-        status: z.enum(['available', 'rented', 'maintenance']).refine((val) => !!val, {
-            message: 'Vui lòng chọn trạng thái',
-        }),
         Files: z.array(z.string()).optional(),
         MetaData: z.string().min(1, 'Vui lòng nhập số nhà/địa chỉ'),
         provinceDivisionUid: z.string().min(1, 'Vui lòng chọn Tỉnh / Thành phố'),

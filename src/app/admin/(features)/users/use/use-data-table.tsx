@@ -22,7 +22,7 @@ export const userStatusOptions = [
 
 export const userPageSizeOptions = [5, 10, 25, 50]
 
-interface ColumnConfig<T> {
+export interface ColumnConfig<T> {
     key: keyof T
     label: string
     render?: (row: T) => React.ReactNode

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from "next/link";
 import Image from 'next/image';
 
@@ -13,6 +13,7 @@ import {
     CardTitle
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
     Dialog,
     DialogContent,
@@ -25,14 +26,14 @@ import {
     MapPin,
     Home,
     Building,
-    LogIn,
-    Badge
+    LogIn
 } from 'lucide-react';
 
-import { publicApartmentRoomAPI, contactAPI } from '@/app/(consumer)/consumer/api';
+import { publicApartmentRoomAPI, contactAPI, favoriteAPI, FavoriteItem } from '@/app/(consumer)/consumer/api';
 import { ApartmentRoomRequest } from "@/app/landlord/rooms/type/apartment";
 import { useAppSelector } from "@/store";
 import ctoast from "@/components/ui/Toast";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 type SharedFilters = {
     minPrice?: number;
@@ -95,6 +96,7 @@ const RoomsSection = ({
     const [joinDialogOpen, setJoinDialogOpen] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState<ApartmentRoomRequest | null>(null);
     const [isJoining, setIsJoining] = useState(false);
+    const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 
     const { isLoggedIn, userType } = useAppSelector((state) => ({
         isLoggedIn: state.auth.isLoggedIn,
@@ -102,6 +104,16 @@ const RoomsSection = ({
     }));
 
     const isConsumer = isLoggedIn && userType === 'consumer';
+
+    const fetchFavorites = useCallback(async () => {
+        if (!isConsumer) return;
+        try {
+            const data = await favoriteAPI.list();
+            setFavorites(data);
+        } catch (error) {
+            console.error('Error fetching favorites:', error);
+        }
+    }, [isConsumer]);
 
     const handleJoinClick = (room: ApartmentRoomRequest) => {
         setSelectedRoom(room);
@@ -127,6 +139,10 @@ const RoomsSection = ({
             ctoast.error('Bạn Đã Gửi Lời Mời Tham Gia Trọ Rồi')
         }
     };
+
+    useEffect(() => {
+        fetchFavorites();
+    }, [isConsumer]);
 
     useEffect(() => {
         const hasFilters = Object.keys(sharedFilters).some(
@@ -220,10 +236,17 @@ const RoomsSection = ({
                                     </div>
                                 )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                <div className="absolute top-3 right-3">
+                                <div className="absolute top-3 right-3 flex items-center gap-2">
                                     <Badge variant={getStatusVariant(room.status)} className="shadow-lg">
                                         {getStatusText(room.status)}
                                     </Badge>
+                                    <FavoriteButton
+                                        roomUid={room.uid!}
+                                        type="RoomBased"
+                                        isLoggedIn={isConsumer}
+                                        favorites={favorites}
+                                        onToggle={fetchFavorites}
+                                    />
                                 </div>
                                 <div className="absolute bottom-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     <Badge variant="secondary" className="backdrop-blur-sm">
@@ -258,11 +281,13 @@ const RoomsSection = ({
                             </CardContent>
 
                             <CardFooter className="flex flex-col gap-2">
-                                <Button className="w-full group/btn" size="sm">
-                  <span className="group-hover/btn:translate-x-1 transition-transform">
-                    Xem chi tiết
-                  </span>
-                                </Button>
+                                <Link href={`/apartment/${room.uid}/details`} className="w-full">
+                                    <Button className="w-full group/btn bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary" size="sm">
+                      <span className="group-hover/btn:translate-x-1 transition-transform">
+                        Xem chi tiết
+                      </span>
+                                    </Button>
+                                </Link>
 
                                 {isConsumer ? (
                                     <Button 

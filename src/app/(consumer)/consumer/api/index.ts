@@ -117,6 +117,42 @@ export class ContactAPI extends AbstractRestApiClient {
     }
 }
 
+export interface CreateFavoritePayload {
+    Type: 'FullApartment' | 'RoomBased';
+    ApartmentUid?: string;
+    ApartmentRoomUid?: string;
+}
+
+export interface FavoriteItem {
+    uid: string;
+    type: 'FullApartment' | 'RoomBased';
+    apartmentUid?: string;
+    apartmentRoomUid?: string;
+}
+
+export interface FavoriteResponse {
+    success: boolean;
+    message?: string;
+}
+
+export class FavoriteAPI extends AbstractRestApiClient {
+    protected protectedResource = true;
+    private base = 'consumer/api/favorite';
+
+    create(payload: CreateFavoritePayload): Promise<FavoriteResponse> {
+        return this.post<FavoriteResponse>(`${this.base}/create`, undefined, payload);
+    }
+
+    list(): Promise<FavoriteItem[]> {
+        return this.get<FavoriteItem[]>(this.base);
+    }
+
+    async removeFavorite(favoriteUid: string): Promise<void> {
+        return super.delete(`${this.base}/${favoriteUid}`);
+    }
+}
+
 export const publicApartmentAPI = new PublicApartmentAPI();
 export const publicApartmentRoomAPI = new PublicApartmentRoomAPI();
 export const contactAPI = new ContactAPI();
+export const favoriteAPI = new FavoriteAPI();

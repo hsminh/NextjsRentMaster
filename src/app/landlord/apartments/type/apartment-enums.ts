@@ -4,7 +4,7 @@ export enum ApartmentType {
 }
 
 export enum ApartmentStatus {
-  AVAILABLE = 'available',
+  AVAILABLE = 'Available',
   RENTED = 'rented',
   MAINTENANCE = 'maintenance',
 }

@@ -33,7 +33,8 @@ export default function AdminGuard({ children }: Readonly<{ children: React.Reac
       if (token) {
         dispatch(setCredentials({
           token,
-          userType: 'admin' 
+          userType: 'admin',
+          userData: {}
         }))
         return
       } else {
