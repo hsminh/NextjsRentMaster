@@ -39,6 +39,7 @@ import {ApartmentType} from "@/app/landlord/apartments/type/apartment-enums";
 import {ApartmentAPI} from "@/app/landlord/apartments/api";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {ApartmentRequest} from "@/app/landlord/apartments/type/apartment";
+import {LandlordAddressAPI} from "@/app/landlord/addresses/api/landlord-address-api";
 
 interface ApartmentFormProps {
     initialData?: ApartmentRequest
@@ -111,9 +112,7 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
     useEffect(() => {
         if (!selectedProvince) {
             setWards([])
-            setStreets([])
             form.setValue('wardDivisionUid', '')
-            form.setValue('streetUid','')
             return
         }
 
@@ -124,8 +123,6 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
                 const data = await api.listWards(selectedProvince)
                 setWards(data)
                 form.setValue('wardDivisionUid','')
-                form.setValue('streetUid','')
-                setStreets([])
             } catch (e) {
                 console.error(e)
                 ctoast.error('Không tải được danh sách phường/xã')
@@ -139,20 +136,12 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
     }, [selectedProvince, form])
 
     useEffect(() => {
-        if (!selectedWard) {
-            setStreets([])
-            form.setValue('streetUid','')
-            return
-        }
-
         const fetchStreets = async () => {
             setLoadingStreets(true)
             try {
-                const api = new AddressDivisionAPI()
-                const data = await api.getStreets(selectedWard)
+                const api = new LandlordAddressAPI()
+                const data = await api.getStreets()
                 setStreets(data)
-                // Reset street khi ward thay đổi
-                form.setValue('streetUid','')
             } catch (e) {
                 console.error(e)
                 ctoast.error('Không tải được danh sách đường')
@@ -163,7 +152,8 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
         }
 
         fetchStreets()
-    }, [selectedWard, form])
+    }, [])
+
 
     useEffect(() => {
         if ((isEdit || isDetails) && initialData?.images?.length) {
@@ -484,13 +474,12 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <span className="truncate">
-                                                                {field.value
-                                                                    ? streets.find((street) => street.uid === field.value)?.name
-                                                                    : selectedWard
-                                                                        ? "Chọn đường/phố"
-                                                                        : "Chọn quận/huyện trước"}
-                                                            </span>
+                                                        <span className="truncate">
+    {field.value
+        ? streets.find((street) => street.uid === field.value)?.name
+        : "Chọn đường/phố"}
+</span>
+
                                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                         </>
                                                     )}
@@ -502,7 +491,7 @@ export function ApartmentForm({ initialData, isEdit = false, isDetails = false }
                                                 <CommandInput
                                                     placeholder="Tìm kiếm đường/phố..."
                                                     className="h-9"
-                                                    disabled={!selectedWard}
+                                                 
                                                 />
                                                 <CommandList>
                                                     <CommandEmpty>
