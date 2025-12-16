@@ -9,6 +9,7 @@ export interface ContractRequest {
   depositAmount: number;
   startDate: string;
   endDate: string;
+  isPayment?: boolean;
   createdAt?: string;
   updatedAt?: string | null;
   isDelete?: boolean;

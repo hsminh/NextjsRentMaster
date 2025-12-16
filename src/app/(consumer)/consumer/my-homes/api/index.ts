@@ -60,6 +60,7 @@ export interface MyContract {
     depositAmount: number;
     startDate: string;
     endDate: string;
+    isPayment?: boolean;
     status: string;
     createdAt: string;
     apartmentDetails: {

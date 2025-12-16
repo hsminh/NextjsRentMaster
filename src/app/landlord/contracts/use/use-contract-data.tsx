@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { ColumnConfig } from "@/app/components/Table/CDataTable"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Loader2, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react"
+import { Loader2, MoreHorizontal, Eye, Edit, Trash2, Check, X } from "lucide-react"
 import { ContractRequest, contractTypeOptions } from "@/app/landlord/contracts/type/contract"
 import { BreadcrumbNavigationProps } from "@/app/components/layout/BreadcrumbNavigation"
 
@@ -102,6 +102,16 @@ export const useContractData: ColumnConfig<ContractRequest>[] = [
         render: (row) => row.endDate ? new Date(row.endDate).toLocaleDateString('vi-VN') : 'Chưa cập nhật',
     },
     {
+        key: 'isPayment',
+        label: 'Trạng thái thanh toán',
+        render: (row) => {
+            if (row.isPayment) {
+                return <span className="px-2 py-1 rounded-md text-sm font-medium text-green-700 bg-green-100">✓ Đã thanh toán</span>
+            }
+            return <span className="px-2 py-1 rounded-md text-sm font-medium text-orange-700 bg-orange-100">⚠ Chưa thanh toán</span>
+        }
+    },
+    {
         key: 'uid',
         label: 'Hành động',
         render: () => null,
@@ -129,6 +139,10 @@ export const ContractActions = ({ contract, onAction, isLoading }: ContractActio
             setIsDeleting(false)
         }
     }, [isLoading])
+
+    const handleTogglePayment = () => {
+        onAction?.('toggle-payment')
+    }
 
     return (
         <DropdownMenu>
@@ -162,6 +176,36 @@ export const ContractActions = ({ contract, onAction, isLoading }: ContractActio
                         <span className="font-medium">Chỉnh sửa</span>
                         <span className="text-xs text-gray-500">Cập nhật thông tin</span>
                     </div>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="bg-gray-100" />
+
+                <DropdownMenuItem
+                    onClick={handleTogglePayment}
+                    className={`px-3 py-2.5 text-sm cursor-pointer transition-colors flex items-center gap-3 ${
+                        contract.isPayment
+                            ? 'text-blue-700 hover:bg-blue-50 hover:text-blue-700'
+                            : 'text-orange-700 hover:bg-orange-50 hover:text-orange-700'
+                    }`}
+                    disabled={isLoading}
+                >
+                    {contract.isPayment ? (
+                        <>
+                            <X className="h-4 w-4 text-blue-600" />
+                            <div className="flex flex-col">
+                                <span className="font-medium">Hủy đánh dấu thanh toán</span>
+                                <span className="text-xs text-gray-500">Đánh dấu lại chưa thanh toán</span>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <Check className="h-4 w-4 text-orange-600" />
+                            <div className="flex flex-col">
+                                <span className="font-medium">Đánh dấu đã thanh toán</span>
+                                <span className="text-xs text-gray-500">Xác nhận thanh toán tháng này</span>
+                            </div>
+                        </>
+                    )}
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator className="bg-gray-100" />

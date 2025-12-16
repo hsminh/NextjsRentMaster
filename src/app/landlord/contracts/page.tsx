@@ -59,7 +59,7 @@ export default function ContractsPage() {
         }
     }
 
-    const handleContractAction = (action: string, contract: ContractRequest) => {
+    const handleContractAction = async (action: string, contract: ContractRequest) => {
         switch (action) {
             case 'view':
                 router.push(`/landlord/contracts/${contract.uid}`)
@@ -67,11 +67,37 @@ export default function ContractsPage() {
             case 'edit':
                 router.push(`/landlord/contracts/${contract.uid}/edit`)
                 break
+            case 'toggle-payment':
+                await handleTogglePayment(contract)
+                break
             case 'delete':
                 setDeleteContract(contract)
                 break
             default:
                 break
+        }
+    }
+
+    const handleTogglePayment = async (contract: ContractRequest) => {
+        setIsDeleting(true)
+        try {
+            const api = new ContractAPI()
+            const updated = {
+                ...contract,
+                isPayment: !contract.isPayment,
+            }
+            await api.update(contract.uid as string, updated)
+            setContracts((prev) =>
+                prev.map((c) => (c.uid === contract.uid ? updated : c))
+            )
+            const message = updated.isPayment
+                ? 'Đánh dấu thanh toán thành công! Tháng này đã thanh toán.'
+                : 'Hủy đánh dấu thanh toán thành công! Tháng này chưa thanh toán.'
+            ctoast.success(message)
+        } catch {
+            ctoast.error('Cập nhật trạng thái thanh toán thất bại!')
+        } finally {
+            setIsDeleting(false)
         }
     }
 

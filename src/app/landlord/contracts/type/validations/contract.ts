@@ -18,6 +18,7 @@ export const contractFormSchema = z
             .refine((val) => val > 0, 'Tiền cọc phải lớn hơn 0'),
         startDate: z.string().min(1, 'Vui lòng chọn ngày bắt đầu'),
         endDate: z.string().min(1, 'Vui lòng chọn ngày kết thúc'),
+        isPayment: z.boolean().default(false).optional(),
     })
     .superRefine((data, ctx) => {
         if (!data.startDate || !data.endDate) {

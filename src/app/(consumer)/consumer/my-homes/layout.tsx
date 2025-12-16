@@ -1,15 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { FileText, MapPin, Calendar, DollarSign, Filter, X, Phone, Mail, User, CreditCard, ChevronRight, Zap, ExternalLink } from 'lucide-react'
+import { FileText, Calendar, Phone, Mail, User, CreditCard, ChevronRight, Zap, ExternalLink, CheckCircle, Loader } from 'lucide-react'
 import { contractAPI, MyContract, contactAPI, MyRental, paymentAPI, PaymentHistory } from './api'
 import { useAppSelector } from '@/store'
+import confetti from 'canvas-confetti'
 
 export default function MyHomesLayout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname()
+    const router = useRouter()
+    const searchParams = useSearchParams()
+
+    const orderId = searchParams.get('orderId')
+    const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed' | null>(null)
+    const [checking, setChecking] = useState(false)
     const [contracts, setContracts] = useState<MyContract[]>([])
     const [rentals, setRentals] = useState<MyRental[]>([])
     const [payments, setPayments] = useState<PaymentHistory[]>([])
@@ -25,6 +30,75 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
         isLoggedIn: state.auth.isLoggedIn,
         userType: state.auth.userType
     }))
+
+    useEffect(() => {
+        if (!orderId) return
+
+        console.log('[Layout] Payment check starting, orderId:', orderId)
+        setChecking(true)
+
+        const checkPayment = async () => {
+            try {
+                const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279'}/api/payments/${orderId}/status`
+                const token = localStorage.getItem('access_token')
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    console.error('[Layout] Payment check failed')
+                    setPaymentStatus('failed')
+                    setChecking(false)
+                    return
+                }
+
+                const data = await response.json()
+                console.log('[Layout] Payment response:', data)
+
+                if (data.status === 'success') {
+                    console.log('[Layout] ✅ Payment success!')
+                    setPaymentStatus('success')
+                    setChecking(false)
+
+                    try {
+                        for (let i = 0; i < 6; i++) {
+                            setTimeout(() => {
+                                confetti({
+                                    particleCount: 200,
+                                    spread: 120,
+                                    origin: { x: Math.random(), y: Math.random() * 0.5 },
+                                    zIndex: 99999,
+                                })
+                            }, i * 200)
+                        }
+                    } catch (e) {
+                        console.log('[Layout] Confetti error:', e)
+                    }
+
+                    setTimeout(() => {
+                        setPaymentStatus('')
+                        router.refresh()
+                    }, 5000)
+                } else {
+                    setPaymentStatus('pending')
+                    setChecking(false)
+                }
+            } catch (error) {
+                console.error('[Layout] Payment check error:', error)
+                setPaymentStatus('failed')
+                setChecking(false)
+            }
+        }
+
+        const timeout = setTimeout(checkPayment, 300)
+        return () => clearTimeout(timeout)
+    }, [orderId, router])
 
     useEffect(() => {
         fetchData()
@@ -95,7 +169,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
             }
             
             if (data.success && data.data?.payUrl) {
-                window.open(data.data.payUrl, '_blank')
+                window.location.href = data.data.payUrl
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra'
@@ -106,14 +180,43 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
         }
     }
 
-    const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
-
-    const filteredContracts = statusFilter === 'all' 
+    const filteredContracts = statusFilter === 'all'
         ? contracts 
         : contracts.filter(c => c.status === statusFilter)
 
     return (
         <div className="min-h-screen pt-24 pb-12 bg-gray-50">
+            {/* PAYMENT SUCCESS - FULL SCREEN */}
+            {paymentStatus === 'success' && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full mx-4 text-center animate-bounce">
+                        <div className="flex justify-center mb-6">
+                            <div className="w-24 h-24 bg-green-200 rounded-full flex items-center justify-center">
+                                <CheckCircle className="w-14 h-14 text-green-600" />
+                            </div>
+                        </div>
+                        <h2 className="text-4xl font-bold text-green-900 mb-3">🎉 Thành công!</h2>
+                        <p className="text-green-700 text-lg mb-6">Thanh toán của bạn đã được xác nhận</p>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <p className="text-green-800 text-sm">Hệ thống đang cập nhật dữ liệu...</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* PAYMENT CHECKING */}
+            {checking && !paymentStatus && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                            <Loader className="w-6 h-6 animate-spin text-primary" />
+                            <p className="text-lg font-semibold text-gray-900">Đang xác nhận thanh toán...</p>
+                        </div>
+                        <p className="text-gray-600 text-sm">Vui lòng đợi một chút</p>
+                    </div>
+                </div>
+            )}
+
             <div className="max-w-7xl mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
                     {/* LEFT SIDEBAR - NAVIGATION TABS */}
@@ -297,13 +400,6 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                     {/* RIGHT SIDEBAR - DETAILS */}
                     <aside className="h-fit sticky top-28">
                         <div className="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
-                            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-primary/10 via-primary/5 to-white">
-                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                    <span className="w-1 h-6 bg-primary rounded-full" />
-                                    Chi tiết
-                                </h2>
-                            </div>
-
                             <div className="p-6 space-y-5">
                                 {/* CONTACT DETAILS */}
                                 {activeTab === 'contact' && selectedContact ? (
@@ -463,21 +559,28 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                                             )}
                                         </div>
 
-                                        <button
-                                            onClick={() => handlePayment(selectedContract.uid)}
-                                            disabled={paymentLoading || selectedContract.status !== 'Active'}
-                                            className={cn(
-                                                'w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all mt-4',
-                                                paymentLoading
-                                                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                                    : selectedContract.status !== 'Active'
-                                                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                                    : 'bg-gradient-to-r from-primary to-primary/80 text-white hover:shadow-lg hover:scale-105'
-                                            )}
-                                        >
-                                            <Zap className="w-5 h-5" />
-                                            {paymentLoading ? 'Đang xử lý...' : 'Thanh toán ngay'}
-                                        </button>
+                                        {selectedContract.isPayment ? (
+                                            <div className="w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 bg-green-100 text-green-700 border-2 border-green-500 mt-4">
+                                                <span className="text-lg">✓</span>
+                                                Tháng này đã thanh toán
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handlePayment(selectedContract.uid)}
+                                                disabled={paymentLoading || selectedContract.status !== 'Active'}
+                                                className={cn(
+                                                    'w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all mt-4',
+                                                    paymentLoading
+                                                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                                        : selectedContract.status !== 'Active'
+                                                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                                        : 'bg-gradient-to-r from-primary to-primary/80 text-white hover:shadow-lg hover:scale-105'
+                                                )}
+                                            >
+                                                <Zap className="w-5 h-5" />
+                                                {paymentLoading ? 'Đang xử lý...' : 'Thanh toán ngay'}
+                                            </button>
+                                        )}
                                     </>
                                 ) : activeTab === 'contract' ? (
                                     <div className="text-center py-12 text-gray-500">
@@ -551,6 +654,16 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                             </div>
                         </div>
                     </aside>
+
+                    {/* RIGHT CONTENT AREA */}
+                    <main className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+                            <h2 className="text-lg font-semibold text-gray-900">Chi Tiết</h2>
+                        </div>
+                        <div className="p-6">
+                            {children}
+                        </div>
+                    </main>
                 </div>
             </div>
         </div>

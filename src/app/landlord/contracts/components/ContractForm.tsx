@@ -414,9 +414,20 @@ export default function ContractForm({ isEdit = false, initialData }: ContractFo
                         )}
                     </div>
                 </div>
+            </div>
 
-
-
+            <div className="border-t pt-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        {...register('isPayment')}
+                        className="w-4 h-4 rounded cursor-pointer"
+                    />
+                    <div>
+                        <p className="text-sm font-medium">Tháng này đã thanh toán</p>
+                        <p className="text-xs text-gray-500">Đánh dấu nếu người thuê đã thanh toán tiền thuê tháng này</p>
+                    </div>
+                </label>
             </div>
 
             <div className="flex gap-4 justify-end">
