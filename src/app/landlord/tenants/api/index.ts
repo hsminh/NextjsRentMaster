@@ -6,7 +6,13 @@ export class TenantAPI extends AbstractRestApiClient {
     private base = 'landlords/api/tenant'
 
     list(): Promise<TenantRequest[]> {
-        return this.get<TenantRequest[]>(this.base)
+        return this.get<TenantRequest[]>(this.base+'/filtered')
+    }
+
+    listFiltered(status?: string): Promise<TenantRequest[]> {
+        const query: Record<string, string> = {}
+        if (status) query.status = status
+        return this.get<TenantRequest[]>(this.base+'/filtered', Object.keys(query).length > 0 ? query : undefined)
     }
 
     detail(uid: string): Promise<TenantRequest> {

@@ -45,7 +45,7 @@ export default function Navbar() {
         if (userType === 'consumer') {
             items.push(
                 <DropdownItem key="profile" href="/profile" icon={User} label="Hồ sơ cá nhân" />,
-                <DropdownItem key="bookings" href="/consumer/bookings" icon={Settings} label="Quản lý đặt chỗ" />,
+                <DropdownItem key="bookings" href="/consumer/my-homes" icon={Settings} label="Chỗ ở của tôi" />,
                 <div key="divider-post" className="border-t border-gray-200 my-1"></div>,
                 <DropdownItem key="post" href="/landlord/passport/login" icon={Plus} label="Đăng tin cho thuê" />
             );

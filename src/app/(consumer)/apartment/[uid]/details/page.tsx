@@ -327,7 +327,7 @@ export default function ApartmentDetailPage() {
                                     Quay lại
                                 </Button>
                             </Link>
-                            {(status === 'available' || status === 'Available') && (
+                            {(status === 'available') && (
                                 <Button 
                                     onClick={handleJoin}
                                     disabled={joining || joinSuccess}

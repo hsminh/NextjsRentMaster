@@ -50,6 +50,15 @@ interface ApartmentsSectionProps {
     sharedFilters?: SharedFilters;
 }
 
+const isValidUrl = (url: string) => {
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
 const getStatusVariant = (status: string) => {
     switch (status) {
         case 'available': return 'default';
@@ -217,9 +226,9 @@ const ApartmentsSection = ({
                             className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20"
                         >
                             <div className="relative h-48 bg-muted overflow-hidden">
-                                {apartment.images && apartment.images.length > 0 && apartment.images[0] ? (
+                                {apartment?.images && apartment?.images.length > 0 && apartment?.images[0] && isValidUrl(apartment.images[0]) ? (
                                     <Image
-                                        src={apartment.images[0]}
+                                        src={apartment?.images[0]}
                                         alt={apartment.title}
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-300"
