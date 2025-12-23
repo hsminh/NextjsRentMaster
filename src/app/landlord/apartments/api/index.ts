@@ -5,8 +5,12 @@ export class ApartmentAPI extends AbstractRestApiClient {
     protected protectedResource = true
     private base = 'landlords/api/apartment'
 
-    list(): Promise<ApartmentRequest[]> {
-        return this.get<ApartmentRequest[]>(this.base)
+    list(type? : string): Promise<ApartmentRequest[]> {
+        const queryParams: Record<string, any> = {};
+        if (type){
+            queryParams.type = type;
+        }
+        return this.get<ApartmentRequest[]>(this.base, queryParams);
     }
 
     detail(uid: string): Promise<ApartmentRequest> {

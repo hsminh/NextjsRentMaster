@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { FileText, Calendar, Phone, Mail, User, CreditCard, ChevronRight, Zap, ExternalLink, CheckCircle, Loader } from 'lucide-react'
-import { contractAPI, MyContract, contactAPI, MyRental, paymentAPI, PaymentHistory } from './api'
+import { contractAPI, MyContract, contactAPI, MyRental, paymentAPI, PaymentItem } from './api'
 import { useAppSelector } from '@/store'
 import confetti from 'canvas-confetti'
 
@@ -17,12 +17,12 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
     const [checking, setChecking] = useState(false)
     const [contracts, setContracts] = useState<MyContract[]>([])
     const [rentals, setRentals] = useState<MyRental[]>([])
-    const [payments, setPayments] = useState<PaymentHistory[]>([])
+    const [payments, setPayments] = useState<PaymentItem[]>([]);
+    const [selectedPayment, setSelectedPayment] = useState<PaymentItem | null>(null);
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState<'contact' | 'contract' | 'payment'>('contact')
     const [selectedContact, setSelectedContact] = useState<MyRental | null>(null)
     const [selectedContract, setSelectedContract] = useState<MyContract | null>(null)
-    const [selectedPayment, setSelectedPayment] = useState<PaymentHistory | null>(null)
     const [statusFilter, setStatusFilter] = useState<string>('all')
     const [paymentLoading, setPaymentLoading] = useState(false)
     const [paymentError, setPaymentError] = useState<string | null>(null)
@@ -82,7 +82,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                     }
 
                     setTimeout(() => {
-                        setPaymentStatus('')
+                        setPaymentStatus(null)
                         router.refresh()
                     }, 5000)
                 } else {
@@ -106,25 +106,33 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
 
     const fetchData = async () => {
         try {
-            setLoading(true)
-            const [contractsData, rentalsData] = await Promise.all([
+            setLoading(true);
+
+            const [
+                contractsData,
+                rentalsData,
+                paymentsRes
+            ] = await Promise.all([
                 contractAPI.getContracts(),
                 contactAPI.getMyRentals(),
-                // paymentAPI.getPaymentHistory()
-            ])
-            setContracts(contractsData)
-            setRentals(rentalsData)
-            // setPayments(paymentsData)
-            
-            if (rentalsData.length > 0) setSelectedContact(rentalsData[0])
-            if (contractsData.length > 0) setSelectedContract(contractsData[0])
-            // if (paymentsData.length > 0) setSelectedPayment(paymentsData[0])
+                paymentAPI.getPaymentHistory()
+            ]);
+
+            setContracts(contractsData);
+            setRentals(rentalsData);
+            setPayments(paymentsRes.data);
+
+            if (rentalsData.length > 0) setSelectedContact(rentalsData[0]);
+            if (contractsData.length > 0) setSelectedContract(contractsData[0]);
+            if (paymentsRes.data.length > 0) setSelectedPayment(paymentsRes.data[0]);
+
         } catch (error) {
-            console.error('Error fetching data:', error)
+            console.error('Error fetching data:', error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
+
 
     useEffect(() => {
         if (activeTab === 'contact' && rentals.length > 0 && !selectedContact) {
@@ -144,7 +152,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
         setSelectedContract(contract)
     }
 
-    const handleSelectPayment = async (payment: PaymentHistory) => {
+    const handleSelectPayment = async (payment: PaymentItem) => {
         setSelectedPayment(payment)
     }
 
@@ -152,7 +160,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
         try {
             setPaymentLoading(true)
             setPaymentError(null)
-            
+
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5279'}/consumer/api/rental-payments/momo/create/${contractUid}`, {
                 method: 'POST',
                 headers: {
@@ -161,13 +169,13 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                 },
                 credentials: 'include'
             })
-            
+
             const data = await response.json()
-            
+
             if (!response.ok) {
                 throw new Error(data.message || 'Thanh toán thất bại')
             }
-            
+
             if (data.success && data.data?.payUrl) {
                 window.location.href = data.data.payUrl
             }
@@ -181,7 +189,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
     }
 
     const filteredContracts = statusFilter === 'all'
-        ? contracts 
+        ? contracts
         : contracts.filter(c => c.status === statusFilter)
 
     return (
@@ -334,7 +342,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                                                                 </p>
                                                                 <span className={cn(
                                                                     'text-xs px-2 py-0.5 rounded-full inline-block mt-2',
-                                                                    contract.status === 'Active' 
+                                                                    contract.status === 'Active'
                                                                         ? 'bg-green-100 text-green-800'
                                                                         : contract.status === 'Pending'
                                                                         ? 'bg-yellow-100 text-yellow-800'
@@ -356,37 +364,39 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                                                     <div className="p-4 text-center text-gray-500 text-sm">Chưa có thanh toán</div>
                                                 ) : (
                                                     <nav className="divide-y divide-gray-200">
-                                                        {payments.map((payment) => (
-                                                            <button
-                                                                key={payment.uid}
-                                                                onClick={() => handleSelectPayment(payment)}
-                                                                className={cn(
-                                                                    'w-full text-left p-4 transition-all border-l-4 border-b border-gray-100 hover:shadow-sm',
-                                                                    selectedPayment?.uid === payment.uid
-                                                                        ? 'border-l-green-500 bg-green-50 hover:bg-green-50'
-                                                                        : 'border-l-transparent hover:bg-gray-50'
-                                                                )}
-                                                            >
-                                                                <div className="flex items-center justify-between">
-                                                                    <p className="font-bold text-sm text-gray-900">
-                                                                        {payment.amount.toLocaleString('vi-VN')} đ
+                                                        {payments.map((payment) => {
+                                                            const isPaid = payment.isPaid
+                                                            const monthYear = `Tháng ${payment.month}/${payment.year}`
+                                                            return (
+                                                                <button
+                                                                    key={payment.uid}
+                                                                    onClick={() => handleSelectPayment(payment)}
+                                                                    className={cn(
+                                                                        'w-full text-left p-4 transition-all border-l-4 border-b border-gray-100 hover:shadow-sm',
+                                                                        selectedPayment?.uid === payment.uid
+                                                                            ? 'border-l-green-500 bg-green-50 hover:bg-green-50'
+                                                                            : 'border-l-transparent hover:bg-gray-50'
+                                                                    )}
+                                                                >
+                                                                    <div className="flex items-center justify-between">
+                                                                        <p className="font-bold text-sm text-gray-900">
+                                                                            {payment.amount.toLocaleString('vi-VN')} đ
+                                                                        </p>
+                                                                        <span className={cn(
+                                                                            'text-xs px-2.5 py-1 rounded-full font-semibold',
+                                                                            isPaid
+                                                                                ? 'bg-green-100 text-green-800'
+                                                                                : 'bg-yellow-100 text-yellow-800'
+                                                                        )}>
+                                                                            {isPaid ? '✅ Đã' : '⏳'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-xs text-gray-500 mt-2 font-medium">
+                                                                        {monthYear}
                                                                     </p>
-                                                                    <span className={cn(
-                                                                        'text-xs px-2.5 py-1 rounded-full font-semibold',
-                                                                        payment.status === 'Paid'
-                                                                            ? 'bg-green-100 text-green-800'
-                                                                            : payment.status === 'Pending'
-                                                                            ? 'bg-yellow-100 text-yellow-800'
-                                                                            : 'bg-red-100 text-red-800'
-                                                                    )}>
-                                                                        {payment.status === 'Paid' ? '✅ Đã' : payment.status === 'Pending' ? '⏳' : '⚠️'}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-xs text-gray-500 mt-2 font-medium">
-                                                                    Hạn: {new Date(payment.dueDate).toLocaleDateString('vi-VN')}
-                                                                </p>
-                                                            </button>
-                                                        ))}
+                                                                </button>
+                                                            )
+                                                        })}
                                                     </nav>
                                                 )}
                                             </>
@@ -436,7 +446,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                                             <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Trạng thái</p>
                                             <span className={cn(
                                                 'text-xs px-3 py-1.5 rounded-full inline-block font-semibold',
-                                                selectedContact.status === 'Active' 
+                                                selectedContact.status === 'Active'
                                                     ? 'bg-green-100 text-green-800'
                                                     : selectedContact.status === 'Pending'
                                                     ? 'bg-yellow-100 text-yellow-800'
@@ -511,7 +521,7 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                                             <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Trạng thái</p>
                                             <span className={cn(
                                                 'text-xs px-3 py-1.5 rounded-full inline-block font-semibold',
-                                                selectedContract.status === 'Active' 
+                                                selectedContract.status === 'Active'
                                                     ? 'bg-green-100 text-green-800'
                                                     : selectedContract.status === 'Pending'
                                                     ? 'bg-yellow-100 text-yellow-800'
@@ -532,30 +542,39 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                                                 <CreditCard className="w-5 h-5 text-primary" />
                                                 Lịch sử thanh toán
                                             </h3>
-                                            
-                                            {payments.filter(p => p.contractUid === selectedContract.uid).length > 0 ? (
-                                                <div className="space-y-3 max-h-[250px] overflow-y-auto">
-                                                    {payments.filter(p => p.contractUid === selectedContract.uid).slice(0, 5).map((payment) => (
-                                                        <div key={payment.uid} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <span className="font-semibold text-gray-900">{payment.amount.toLocaleString('vi-VN')} đ</span>
+
+                                            {payments.filter(p => p.rentalContractUid === selectedContract.uid).length > 0 ? (
+                                                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                                                    {payments.filter(p => p.rentalContractUid === selectedContract.uid).map((payment) => (
+                                                        <div key={payment.uid} className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-all">
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <div>
+                                                                    <p className="text-sm font-bold text-gray-900">{payment.amount.toLocaleString('vi-VN')} đ</p>
+                                                                    <p className="text-xs text-gray-600">Tháng {payment.month}/{payment.year}</p>
+                                                                </div>
                                                                 <span className={cn(
-                                                                    'text-xs px-2 py-1 rounded-full font-semibold',
-                                                                    payment.status === 'Paid'
-                                                                        ? 'bg-green-100 text-green-800'
-                                                                        : payment.status === 'Pending'
-                                                                        ? 'bg-yellow-100 text-yellow-800'
-                                                                        : 'bg-red-100 text-red-800'
+                                                                    'text-xs px-3 py-1.5 rounded-full font-semibold border',
+                                                                    payment.isPaid
+                                                                        ? 'bg-green-100 text-green-700 border-green-300'
+                                                                        : 'bg-yellow-100 text-yellow-700 border-yellow-300'
                                                                 )}>
-                                                                    {payment.status === 'Paid' ? '✅' : payment.status === 'Pending' ? '⏳' : '⚠️'}
+                                                                    {payment.isPaid ? '✅ Đã' : '⏳ Chưa'}
                                                                 </span>
                                                             </div>
-                                                            <p className="text-xs text-gray-500">Hạn: {new Date(payment.dueDate).toLocaleDateString('vi-VN')}</p>
+                                                            {payment.method && (
+                                                                <p className="text-xs text-gray-600 font-medium">PT: {payment.method}</p>
+                                                            )}
+                                                            {payment.isPaid && payment.paidAt && (
+                                                                <p className="text-xs text-green-600 mt-2">✓ {new Date(payment.paidAt).toLocaleDateString('vi-VN')}</p>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <p className="text-sm text-gray-500 text-center py-4">Chưa có thanh toán</p>
+                                                <div className="text-center py-6">
+                                                    <CreditCard className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                                    <p className="text-sm text-gray-500">Chưa có thanh toán</p>
+                                                </div>
                                             )}
                                         </div>
 
@@ -602,46 +621,46 @@ export default function MyHomesLayout({ children }: { children: React.ReactNode 
                                         <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                             <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Trạng thái</p>
                                             <span className={cn(
-                                                'text-xs px-3 py-1.5 rounded-full inline-block font-semibold',
-                                                selectedPayment.status === 'Paid'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : selectedPayment.status === 'Pending'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-red-100 text-red-800'
+                                                'text-xs px-3 py-1.5 rounded-full inline-block font-semibold border',
+                                                selectedPayment.isPaid
+                                                    ? 'bg-green-100 text-green-700 border-green-300'
+                                                    : 'bg-yellow-100 text-yellow-700 border-yellow-300'
                                             )}>
-                                                {selectedPayment.status === 'Paid' ? '✅ Đã thanh toán' : selectedPayment.status === 'Pending' ? '⏳ Chưa thanh toán' : '⚠️ Quá hạn'}
+                                                {selectedPayment.isPaid ? '✅ Đã thanh toán' : '⏳ Chưa thanh toán'}
                                             </span>
                                         </div>
 
-                                        <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-                                            <p className="text-xs font-semibold text-orange-600 uppercase tracking-wide mb-2 flex items-center gap-1">
-                                                <Calendar className="w-3 h-3" />
-                                                Hạn thanh toán
-                                            </p>
-                                            <p className="text-sm font-bold text-gray-900">{new Date(selectedPayment.dueDate).toLocaleDateString('vi-VN')}</p>
-                                        </div>
+                                        {selectedPayment.month && selectedPayment.year && (
+                                            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                                <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2 flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" />
+                                                    Kỳ thanh toán
+                                                </p>
+                                                <p className="text-sm font-bold text-gray-900">Tháng {selectedPayment.month}/{selectedPayment.year}</p>
+                                            </div>
+                                        )}
 
-                                        {selectedPayment.paidDate && (
+                                        {selectedPayment.isPaid && selectedPayment.paidAt && (
                                             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                                                 <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-2 flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
                                                     Ngày thanh toán
                                                 </p>
-                                                <p className="text-sm font-bold text-green-700">{new Date(selectedPayment.paidDate).toLocaleDateString('vi-VN')}</p>
+                                                <p className="text-sm font-bold text-green-700">{new Date(selectedPayment.paidAt).toLocaleDateString('vi-VN')}</p>
                                             </div>
                                         )}
 
-                                        {selectedPayment.paymentMethod && (
+                                        {selectedPayment.method && (
                                             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
                                                 <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">Phương thức</p>
-                                                <p className="text-sm font-medium text-gray-900">{selectedPayment.paymentMethod}</p>
+                                                <p className="text-sm font-medium text-gray-900">{selectedPayment.method}</p>
                                             </div>
                                         )}
 
-                                        {selectedPayment.notes && (
+                                        {selectedPayment.note && (
                                             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                                                 <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">Ghi chú</p>
-                                                <p className="text-sm text-gray-900">{selectedPayment.notes}</p>
+                                                <p className="text-sm text-gray-900">{selectedPayment.note}</p>
                                             </div>
                                         )}
                                     </>

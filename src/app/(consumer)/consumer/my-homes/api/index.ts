@@ -90,30 +90,44 @@ export class ContractAPI extends AbstractRestApiClient {
     }
 }
 
-export interface PaymentHistory {
+export interface PaymentItem {
     uid: string;
-    contractUid: string;
+    rentalContractUid: string;
+
+    year: number;
+    month: number;
+
     amount: number;
-    dueDate: string;
-    paidDate?: string;
-    status: 'Pending' | 'Paid' | 'Overdue';
-    paymentMethod?: string;
-    notes?: string;
+
+    isPaid: boolean;
+    paidAt: string | null;
+
+    method: string | null;
+    note: string | null;
+
+    collectedByUid: string | null;
+
     createdAt: string;
+}
+export interface PaymentResponse {
+    success: boolean;
+    message: string;
+    data: PaymentItem[];
 }
 
 export class PaymentAPI extends AbstractRestApiClient {
     protected protectedResource = true;
-    private base = 'consumers/api/payments';
+    private base = 'consumer/api/rental-payments';
 
-    getPaymentHistory(): Promise<PaymentHistory[]> {
-        return this.get<PaymentHistory[]>(this.base);
+    getPaymentHistory(): Promise<PaymentResponse> {
+        return this.get<PaymentResponse>(this.base);
     }
 
-    getPaymentsByContract(contractUid: string): Promise<PaymentHistory[]> {
-        return this.get<PaymentHistory[]>(`${this.base}`, { contractUid });
+    getPaymentsByContract(contractUid: string): Promise<PaymentResponse> {
+        return this.get<PaymentResponse>(this.base, { contractUid });
     }
 }
+
 
 export const contactAPI = new ContactAPI();
 export const contractAPI = new ContractAPI();

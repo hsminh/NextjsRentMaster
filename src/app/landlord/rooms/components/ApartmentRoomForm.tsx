@@ -30,13 +30,11 @@ import { RoomAPI } from '@/app/landlord/rooms/api'
 import { ApartmentRoomRequest } from '@/app/landlord/rooms/type/apartment'
 import { apartmentRoomFormSchema, ApartmentRoomFormValues } from '@/app/landlord/rooms/type/validations/apartment'
 
-// ====== MetaData options ======
 const metaOptions = [
     { key: 'floor', label: 'Phòng ở tầng' },
     { key: 'bedrooms', label: 'Số phòng ngủ' },
     { key: 'bathrooms', label: 'Số phòng tắm' },
     { key: 'fullFurniture', label: 'Đầy đủ nội thất' },
-    // thêm tuỳ ý
 ]
 
 type MetaRow = { id: string; key: string; value: string }
@@ -70,7 +68,6 @@ export function ApartmentRoomForm({ initialData, isEdit = false, isDetails = fal
 
     const isDisabled = isDetails || isLoading
 
-    // ====== Sync metaRows -> form.metaData ======
     const syncMetaToForm = (rows: MetaRow[]) => {
         const meta: Record<string, string> = {}
         rows.forEach((r) => {
@@ -85,21 +82,19 @@ export function ApartmentRoomForm({ initialData, isEdit = false, isDetails = fal
         }
     }
 
-    // Convert metaData to MetaDataJson for backend
     const prepareFormData = (values: ApartmentRoomFormValues) => {
         const { metaData, ...rest } = values;
         return {
             ...rest,
-            MetaDataJson: metaData  // Convert to MetaDataJson for backend
+            MetaDataJson: metaData 
         };
     };
 
-    // ====== Init apartments ======
     useEffect(() => {
         const fetchApartments = async () => {
             try {
                 const api = new ApartmentAPI()
-                const list = await api.list()
+                const list = await api.list('RoomBased')
                 setApartments(list.map((a: any) => ({ uid: a.uid, title: a.title })))
             } catch (error) {
                 console.error('Lỗi khi lấy danh sách căn hộ:', error)
@@ -108,7 +103,6 @@ export function ApartmentRoomForm({ initialData, isEdit = false, isDetails = fal
         fetchApartments()
     }, [])
 
-    // ====== Init images ======
     useEffect(() => {
         if ((isEdit || isDetails) && initialData?.images?.length) {
             setPreviewFiles(initialData.images)
@@ -116,13 +110,12 @@ export function ApartmentRoomForm({ initialData, isEdit = false, isDetails = fal
         }
     }, [isEdit, isDetails, initialData, form])
 
-    // ====== Init metaRows từ initialData.metaData ======
     useEffect(() => {
         if (initialData?.metaData) {
             const rows: MetaRow[] = Object.entries(initialData.metaData)
                 .filter(([_, v]) => v !== undefined)
                 .map(([k, v]) => ({
-                    id: k,        // đơn giản: dùng luôn key làm id
+                    id: k,      
                     key: k,
                     value: String(v),
                 }))
@@ -131,7 +124,6 @@ export function ApartmentRoomForm({ initialData, isEdit = false, isDetails = fal
         }
     }, [initialData])
 
-    // ====== Cleanup blob url ======
     useEffect(() => {
         return () => {
             previewFiles.forEach((url) => {
@@ -140,7 +132,6 @@ export function ApartmentRoomForm({ initialData, isEdit = false, isDetails = fal
         }
     }, [previewFiles])
 
-    // ====== Handler metaRows ======
     const handleAddMetaRow = () => {
         const usedKeys = metaRows.map((r) => r.key)
         const available = metaOptions.find((o) => !usedKeys.includes(o.key))
@@ -177,14 +168,12 @@ export function ApartmentRoomForm({ initialData, isEdit = false, isDetails = fal
         syncMetaToForm(newRows)
     }
 
-    // ====== Submit ======
     const onSubmit = async (values: ApartmentRoomFormValues) => {
         if (isDetails) return
 
         try {
             setIsLoading(true)
             const api = new RoomAPI()
-            // Convert metaData to MetaDataJson for backend
             const backendData = prepareFormData(values)
             const formData = await createFormData(backendData, values.Files)
 
